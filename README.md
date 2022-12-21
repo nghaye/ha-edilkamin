@@ -17,6 +17,7 @@ Based on the work of https://github.com/AndreMiras/core
 - Issue with the integration setup form, mac and name fields are blank
 - No detection of the number of fans
 - Manual mode
+- Use edilkamin.py 1.2.0
 
 ## To-do
 
