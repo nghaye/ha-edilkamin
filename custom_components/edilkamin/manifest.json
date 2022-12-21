@@ -1,0 +1,14 @@
+{
+  "domain": "edilkamin",
+  "name": "Edilkamin Stove",
+  "version": "2022.12.02",
+  "config_flow": true,
+  "documentation": "https://www.home-assistant.io/integrations/edilkamin",
+  "requirements": ["edilkamin==1.1.0"],
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {},
+  "dependencies": ["bluetooth", "http"],
+  "codeowners": ["@AndreMiras"],
+  "iot_class": "cloud_polling"
+}
