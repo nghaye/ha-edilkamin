@@ -28,3 +28,4 @@ Based on the work of https://github.com/AndreMiras/core
 - Switch entity for chrono mode
 - Sensors for stats : power level, running hours
 - DHCP discovery
+- Implement a [coordinator](https://developers.home-assistant.io/docs/integration_fetching_data/) for all data updates
