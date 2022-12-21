@@ -11,6 +11,7 @@ Based on the work of https://github.com/AndreMiras/core
 - Auxiliary fan control (with a fan entity)
 - Auto mode
 - Stove operational mode
+- Display current power level
 
 ## Not working / Issues
 
