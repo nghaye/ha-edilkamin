@@ -1,6 +1,6 @@
 # ha-edilkamin
 
-Some tests with Edilkamin custom component
+Some tests with Edilkamin custom component. And a good opportunity for learning HA backend.
 
 Based on the work of https://github.com/AndreMiras/core
 
