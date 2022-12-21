@@ -1,7 +1,5 @@
 """Edilkamin integration entity."""
-
 from __future__ import annotations
-import logging
 
 import edilkamin
 from .const import *
@@ -17,7 +15,6 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_NAME, CONF_MA
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-_LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -111,7 +108,7 @@ class EdilkaminFan(FanEntity):
 
     def set_percentage(self, percentage: int) -> None:
         """Set the speed percentage of the fan."""
-        _LOGGER.debug("Setting async percentage: %s", percentage)
+        LOGGER.debug("Setting async percentage: %s", percentage)
 
         fan_speed = FAN_PERCENTAGE_SPEED[percentage]
         token = self.refresh_token()
@@ -121,7 +118,7 @@ class EdilkaminFan(FanEntity):
 
     def set_preset_mode(self, preset_mode: str) -> None:
         """Set the speed percentage of the fan."""
-        _LOGGER.debug("Setting async fan mode: %s", preset_mode)
+        LOGGER.debug("Setting async fan mode: %s", preset_mode)
 
         token = self.refresh_token()
         if preset_mode == "auto" :

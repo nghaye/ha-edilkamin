@@ -1,6 +1,4 @@
 """Edilkamin integration entity."""
-import logging
-
 import edilkamin
 from .const import *
 
@@ -11,7 +9,6 @@ from homeassistant.components.climate import (
 )
 from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS
 
-_LOGGER = logging.getLogger(__name__)
 
 power_to_hvac = {
     edilkamin.Power.OFF: HVACMode.OFF,
@@ -67,7 +64,7 @@ class EdilkaminEntity(ClimateEntity):
             token = self.refresh_token()
             self._device_info = edilkamin.device_info(token, self._mac_address)
         except:
-            _LOGGER.error("Unable to update edilkamin device")
+            LOGGER.error("Unable to update edilkamin device")
             return
         power = edilkamin.device_info_get_power(self._device_info)
         self._attr_hvac_mode = power_to_hvac[power]
@@ -103,9 +100,9 @@ class EdilkaminEntity(ClimateEntity):
 
     def set_hvac_mode(self, hvac_mode):
         """Set new target hvac mode."""
-        _LOGGER.debug("Setting async hvac mode: %s", hvac_mode)
+        LOGGER.debug("Setting async hvac mode: %s", hvac_mode)
         if hvac_mode not in hvac_mode_to_power:
-            _LOGGER.warning("Unsupported mode: %s", hvac_mode)
+            LOGGER.warning("Unsupported mode: %s", hvac_mode)
             return
         power = hvac_mode_to_power[hvac_mode]
         token = self.refresh_token()
@@ -113,7 +110,7 @@ class EdilkaminEntity(ClimateEntity):
 
     def set_fan_mode(self, fan_mode):
         """Set new target fan mode."""
-        _LOGGER.debug("Setting async hvac mode: %s", fan_mode)
+        LOGGER.debug("Setting async hvac mode: %s", fan_mode)
 
         fan_speed = fan_mode_to_speed[fan_mode]
         token = self.refresh_token()
