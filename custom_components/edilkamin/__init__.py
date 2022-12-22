@@ -9,7 +9,7 @@ from homeassistant.helpers import device_registry as dr
 from .const import DOMAIN
 from .coordinator import EdilkaminCoordinator
 
-PLATFORMS: list[Platform] = [Platform.CLIMATE, Platform.FAN, Platform.SENSOR]
+PLATFORMS: list[Platform] = [Platform.CLIMATE, Platform.FAN, Platform.SENSOR, Platform.SWITCH]
 #PLATFORMS: list[Platform] = [Platform.FAN]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
