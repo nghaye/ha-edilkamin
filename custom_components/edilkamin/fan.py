@@ -30,8 +30,17 @@ async def async_setup_entry(
     name = entry.data[CONF_NAME]
     coordinator = hass.data[DOMAIN]["coordinator"]
 
-    LOGGER.debug("Creation de l'entite fan")
-    async_add_entities([EdilkaminFan(coordinator, 2, name)], True)
+    await coordinator.async_request_refresh()
+    fan_number = coordinator.data["nvm"]["installer_parameters"]["fans_number"]
+
+    if fan_number == 1 :
+        return
+    else :  
+        entities = [
+            EdilkaminFan(coordinator, i, name)
+            for i in range(2, fan_number +1)
+        ]
+        async_add_entities(entities, True)
 
 
 class EdilkaminFan(CoordinatorEntity, FanEntity):
@@ -67,6 +76,7 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
         self._device_info = {}
         self._fan_index = fan_index
         self._mqtt_command = f"fan_{self._fan_index}_speed"
+        self._device_info = self.coordinator.data
 
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}

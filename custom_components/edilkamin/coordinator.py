@@ -25,7 +25,7 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
             # Name of the data. For logging purposes.
             name="Edilkamin updater",
             # Polling interval. Will only be polled if there are subscribers.
-            update_interval=timedelta(seconds=30),
+            update_interval=timedelta(seconds=60),
         )
         self._username = username
         self._password = password 

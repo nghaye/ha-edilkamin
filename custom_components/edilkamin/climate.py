@@ -63,8 +63,6 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         - the MAC address that identifies the stove
         """
         super().__init__(coordinator)
-        
-        LOGGER.debug("Initialisation climate edilkamin")
 
         self._mac_address = coordinator.get_mac()
         if name :
@@ -74,16 +72,29 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         self._attr_unique_id = self._mac_address + "_stove"
         self._device_info = {}
 
-        # Default values
-        self._attr_hvac_mode = HVACMode.OFF
-        self._attr_fan_mode = FAN_AUTO
-        self._attr_preset_mode = PRESET_1
-        
+        # Initial Values
+        self._device_info = self.coordinator.data   
+
+        power = edilkamin.device_info_get_power(self._device_info)
+        self._attr_hvac_mode = power_to_hvac[power]
+        self._attr_target_temperature = edilkamin.device_info_get_target_temperature(
+            self._device_info
+        )
+        self._attr_current_temperature = (
+            edilkamin.device_info_get_environment_temperature(self._device_info)
+        )
+
+        fan_speed =  self._device_info["nvm"]["user_parameters"]["fan_1_ventilation"]       
+        self._attr_fan_mode = FAN_SPEED_TO_MODE[fan_speed]
+
+        actual_power = self._device_info["status"]["state"]["actual_power"]
+        self._attr_preset_mode = PRESET_MODES[actual_power - 1]
+
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}
 		}
 
-        self._attr_extra_state_attributes = {}
+        self._attr_extra_state_attributes = {}  
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
