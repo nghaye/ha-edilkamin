@@ -56,7 +56,9 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     hub = EdilkaminHub(hass)
     username = data[CONF_USERNAME]
     password = data[CONF_PASSWORD]
-    mac_address = data[CONF_MAC]
+    #mac_address = data[CONF_MAC]
+    if not CONF_NAME in data :
+        data[CONF_NAME] = "Stove " + data[CONF_MAC]
     token = await hub.authenticate(username, password)
     if not token:
         raise InvalidAuth

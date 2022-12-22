@@ -3,10 +3,15 @@ from __future__ import annotations
 
 import edilkamin
 from .const import *
+#from .coordinator import EdilkaminCoordinator
 
 from homeassistant.components.fan import (
     FanEntity,
     FanEntityFeature
+)
+
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
 )
 
 from homeassistant.components.bluetooth import async_discovered_service_info
@@ -22,25 +27,14 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the stove with config flow."""
-    username = entry.data[CONF_USERNAME]
-    password = entry.data[CONF_PASSWORD]
     name = entry.data[CONF_NAME]
-    if entry.data[CONF_MAC] :
-        mac_addresses = (entry.data[CONF_MAC])
-    else :
-        ble_devices = tuple(
-            {"name": discovery_info.name, "address": discovery_info.address}
-            for discovery_info in async_discovered_service_info(hass, False)
-        )
-        mac_addresses = edilkamin.discover_devices_helper(ble_devices)
-    for mac_address in mac_addresses :
-        entities = []
-        entities.append(EdilkaminFan(username, password, mac_address, 2, name))
+    coordinator = hass.data[DOMAIN]["coordinator"]
 
-    async_add_entities(entities, True)
+    LOGGER.debug("Creation de l'entite fan")
+    async_add_entities([EdilkaminFan(coordinator, 2, name)], True)
 
 
-class EdilkaminFan(FanEntity):
+class EdilkaminFan(CoordinatorEntity, FanEntity):
     """Representation of a stove fan."""
 
     _attr_supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
@@ -50,9 +44,7 @@ class EdilkaminFan(FanEntity):
 
     def __init__(
         self,
-        username: str,
-        password: str,
-        mac_address: str,
+        coordinator,
         fan_index: int,
         name: str,
     ) -> None:
@@ -63,30 +55,34 @@ class EdilkaminFan(FanEntity):
         - the username/password to login
         - the MAC address that identifies the stove
         """
+        super().__init__(coordinator)
+        
+        self._mac_address = coordinator.get_mac()
+
         if name : 
             self._attr_name = f"{name} Fan {fan_index}"
         else :
-            self._attr_name = f"Stove Fan {fan_index} ({mac_address})"
-        self._attr_unique_id = f"{mac_address}_fan{fan_index}"
-        self._username = username
-        self._password = password
-        self._mac_address = mac_address
-        self._device_info = None
+            self._attr_name = f"Stove Fan {fan_index} ({self._mac_address})"
+        self._attr_unique_id = f"{self._mac_address}_fan{fan_index}"
+        self._device_info = {}
         self._fan_index = fan_index
         self._mqtt_command = f"fan_{self._fan_index}_speed"
+
+        self._attr_device_info = {
+            "identifiers": {("edilkamin", self._mac_address)}
+		}
 
         self._stove_power = 0
 
         self._attr_extra_state_attributes = {}
 
-    def refresh_token(self) -> str:
-        """Login to refresh the token."""
-        return edilkamin.sign_in(self._username, self._password)
+    #@callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self._device_info = self.coordinator.data
 
-    def update(self) -> None:
-        """Get the latest data and update the relevant Entity attributes."""
-        token = self.refresh_token()
-        self._device_info = edilkamin.device_info(token, self._mac_address)
+        if not self._device_info :
+            return
 
         speed = self._device_info["nvm"]["user_parameters"][f"fan_{self._fan_index}_ventilation"]  
         if speed == 6 :
@@ -106,12 +102,14 @@ class EdilkaminFan(FanEntity):
             else : 
                 self._attr_is_on = True
 
+        self.async_write_ha_state()
+
     def set_percentage(self, percentage: int) -> None:
         """Set the speed percentage of the fan."""
         LOGGER.debug("Setting async percentage: %s", percentage)
 
         fan_speed = FAN_PERCENTAGE_SPEED[percentage]
-        token = self.refresh_token()
+        token = self.coordinator.get_token()
         payload = {"name" :"fan_2_speed", "value" : fan_speed}
         edilkamin.mqtt_command(token, self._mac_address, payload)
         self._attr_percentage = percentage
@@ -120,7 +118,7 @@ class EdilkaminFan(FanEntity):
         """Set the speed percentage of the fan."""
         LOGGER.debug("Setting async fan mode: %s", preset_mode)
 
-        token = self.refresh_token()
+        token = self.coordinator.get_token()
         if preset_mode == "auto" :
             payload = {"name" : self._mqtt_command, "value" : 2}
         else :
@@ -131,7 +129,7 @@ class EdilkaminFan(FanEntity):
         self._attr_preset_mode = preset_mode
 
     def turn_on(self, speed = None, percentage = None, preset_mode = None, **kwargs) -> None:
-        token = self.refresh_token()
+        token = self.coordinator.get_token()
         if preset_mode == "auto" or self._attr_preset_mode == "auto" :
             payload = {"name" : self._mqtt_command, "value" : 6}
         else :
@@ -146,7 +144,7 @@ class EdilkaminFan(FanEntity):
     def turn_off(self, **kwargs) -> None:
         """Turn the fan off."""
         
-        token = self.refresh_token()
+        token = self.coordinator.get_token()
         payload = {"name" : self._mqtt_command, "value" : 0}
         edilkamin.mqtt_command(token, self._mac_address, payload)
         self._attr_percentage = 0
