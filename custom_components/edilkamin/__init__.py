@@ -9,7 +9,7 @@ from homeassistant.helpers import device_registry as dr
 from .const import DOMAIN
 from .coordinator import EdilkaminCoordinator
 
-PLATFORMS: list[Platform] = [Platform.CLIMATE, Platform.FAN]
+PLATFORMS: list[Platform] = [Platform.CLIMATE, Platform.FAN, Platform.SENSOR]
 #PLATFORMS: list[Platform] = [Platform.FAN]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -28,13 +28,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
-
-
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = entry.data
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    return True
-
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""

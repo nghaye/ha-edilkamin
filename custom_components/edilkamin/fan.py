@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import edilkamin
 from .const import *
-#from .coordinator import EdilkaminCoordinator
 
 from homeassistant.components.fan import (
     FanEntity,
@@ -16,7 +15,7 @@ from homeassistant.helpers.update_coordinator import (
 
 from homeassistant.components.bluetooth import async_discovered_service_info
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_NAME, CONF_MAC
+from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
