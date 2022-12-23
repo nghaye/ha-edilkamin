@@ -3,9 +3,8 @@ from __future__ import annotations
 
 import edilkamin
 
-from homeassistant.components.bluetooth import async_discovered_service_info
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_NAME, CONF_MAC, ATTR_TEMPERATURE, TEMP_CELSIUS
+from homeassistant.const import CONF_NAME, ATTR_TEMPERATURE, TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 

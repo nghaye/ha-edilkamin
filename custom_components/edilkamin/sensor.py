@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import edilkamin
 from .const import *
 
 from homeassistant.components.sensor import (
@@ -15,7 +14,6 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
 
-from homeassistant.components.bluetooth import async_discovered_service_info
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant

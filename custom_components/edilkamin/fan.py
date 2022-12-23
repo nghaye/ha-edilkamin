@@ -13,7 +13,6 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
 
-from homeassistant.components.bluetooth import async_discovered_service_info
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
@@ -72,7 +71,6 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
         else :
             self._attr_name = f"Stove Fan {fan_index} ({self._mac_address})"
         self._attr_unique_id = f"{self._mac_address}_fan{fan_index}"
-        self._device_info = {}
         self._fan_index = fan_index
         self._mqtt_command = f"fan_{self._fan_index}_speed"
         self._device_info = self.coordinator.data
