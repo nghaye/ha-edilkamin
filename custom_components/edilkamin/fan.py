@@ -79,8 +79,6 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
             "identifiers": {("edilkamin", self._mac_address)}
 		}
 
-        self._stove_power = 0
-
         self._attr_extra_state_attributes = {}
 
     #@callback
@@ -100,14 +98,14 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
             self._attr_percentage = FAN_SPEED_PERCENTAGE[speed]
         self._attr_extra_state_attributes["actual_speed"] = self._device_info["status"]["fans"][f"fan_{self._fan_index}_speed"]  
 
-        power = edilkamin.device_info_get_power(self._device_info)
-        if power == edilkamin.Power.OFF :
-            self._attr_is_on = False
-        else :
-            if self._attr_percentage == 0 :
-                self._attr_is_on = False
-            else : 
-                self._attr_is_on = True
+        #power = edilkamin.device_info_get_power(self._device_info)
+        #if power == edilkamin.Power.OFF :
+        #    self._attr_is_on = False
+        #else :
+        #    if self._attr_percentage == 0 :
+        #        self._attr_is_on = False
+        #    else : 
+        #        self._attr_is_on = True
 
         self.async_write_ha_state()
 
@@ -136,6 +134,7 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
         self._attr_preset_mode = preset_mode
 
     def turn_on(self, speed = None, percentage = None, preset_mode = None, **kwargs) -> None:
+        """Turn the fan on"""
         token = self.coordinator.get_token()
         if preset_mode == "auto" or self._attr_preset_mode == "auto" :
             payload = {"name" : self._mqtt_command, "value" : 6}
@@ -155,3 +154,12 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
         payload = {"name" : self._mqtt_command, "value" : 0}
         edilkamin.mqtt_command(token, self._mac_address, payload)
         self._attr_percentage = 0
+
+    @property
+    def is_on(self) -> bool:
+        """ Return if the fan is on"""
+        power = edilkamin.device_info_get_power(self._device_info)
+        if power == edilkamin.Power.OFF :
+            return False
+        else :
+            return self._attr_percentage == 0
