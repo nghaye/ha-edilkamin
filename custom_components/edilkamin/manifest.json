@@ -16,5 +16,6 @@
     {
     "hostname": "espressif",
     "macaddress": "*"
-    },
+    }
+  ]
 }
