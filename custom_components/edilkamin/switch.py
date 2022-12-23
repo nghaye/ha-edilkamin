@@ -33,12 +33,13 @@ async def async_setup_entry(
     async_add_entities(
         [
             RelaxSwitch(coordinator, name),
+            StandbySwitch(coordinator, name)
         ],
         update_before_add=False,
     )
 
 class RelaxSwitch(CoordinatorEntity, SwitchEntity):
-    """Number of power ons"""
+    """Relax Mode switch entity"""
 
     def __init__(
         self,
@@ -53,34 +54,66 @@ class RelaxSwitch(CoordinatorEntity, SwitchEntity):
         if name : 
             self._attr_name = f"{name} Relax Mode"
         else :
-            self._attr_name = f"Stove Relax Mode"
+            self._attr_name = "Stove Relax Mode"
         self._attr_unique_id = f"{self._mac_address}_relaxmode"
         
-        # Initial value
-        relax_mode = edilkamin.device_info_get_relax_mode(self.coordinator.data)
-        if relax_mode :
-            self._attr_state = "on"
-        else :
-            self._attr_state = "off"
-
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}
 		}
 
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        relax_mode = edilkamin.device_info_get_relax_mode(self.coordinator.data)
-        if relax_mode :
-            self._attr_state = "on"
-        else :
-            self._attr_state = "off"
+    @property
+    def is_on(self) -> bool:
+        """Return if relax mode is on."""
+        return edilkamin.device_info_get_relax_mode(self.coordinator.data)
 
-    def turn_on(self, **kwargs) -> None:
+    async def turn_on(self, **kwargs) -> None:
         """Turn the entity on."""
-        edilkamin.set_relax_mode(self.coordinator.get_token(), self._mac_address, True)
-        self._attr_state = "on"
+        token = self.coordinator.get_token()
+        await self.hass.async_add_executor_job(edilkamin.set_relax_mode, token, self._mac_address, True)
+        await self.coordinator.async_refresh()
 
-    def turn_off(self, **kwargs) -> None:
+    async def turn_off(self, **kwargs) -> None:
         """Turn the entity off."""
-        edilkamin.set_relax_mode(self.coordinator.get_token(), self._mac_address, False)
-        self._attr_state = "off"
+        token = self.coordinator.get_token()
+        await self.hass.async_add_executor_job(edilkamin.set_relax_mode, token, self._mac_address, False)
+        await self.coordinator.async_refresh()
+
+class StandbySwitch(CoordinatorEntity, SwitchEntity):
+    """Standby Mode Entity"""
+
+    def __init__(
+        self,
+        coordinator,
+        name: str,
+    ) -> None:
+        """Create the Edilkamin power ons sensor entity."""
+        super().__init__(coordinator)
+        
+        self._mac_address = coordinator.get_mac()
+
+        if name : 
+            self._attr_name = f"{name} Standby Mode"
+        else :
+            self._attr_name = "Stove Standby Mode"
+        self._attr_unique_id = f"{self._mac_address}_standbymode"
+        
+        self._attr_device_info = {
+            "identifiers": {("edilkamin", self._mac_address)}
+		}
+
+    @property
+    def is_on(self) -> bool:
+        """Return if standby mode is on."""
+        return edilkamin.device_info_get_standby_mode(self.coordinator.data)
+
+    async def turn_on(self, **kwargs) -> None:
+        """Turn the entity on."""
+        token = self.coordinator.get_token()
+        await self.hass.async_add_executor_job(edilkamin.set_standby_mode, token, self._mac_address, True)
+        await self.coordinator.async_refresh()
+
+    async def turn_off(self, **kwargs) -> None:
+        """Turn the entity off."""
+        token = self.coordinator.get_token()
+        await self.hass.async_add_executor_job(edilkamin.set_standby_mode, token, self._mac_address, False)
+        await self.coordinator.async_refresh()
