@@ -93,7 +93,7 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
             "identifiers": {("edilkamin", self._mac_address)}
 		}
 
-        self._attr_extra_state_attributes = {}  
+        self._attr_extra_state_attributes = {}
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -118,10 +118,10 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         self._attr_extra_state_attributes["actual_power"] = actual_power
         self._attr_preset_mode = PRESET_MODES[actual_power - 1]
 
-        self._attr_extra_state_attributes["relax_mode"] = self._device_info["nvm"]["user_parameters"]["is_relax_active"]
+        #self._attr_extra_state_attributes["relax_mode"] = self._device_info["nvm"]["user_parameters"]["is_relax_active"]
         op_phase = self._device_info["status"]["state"]["operational_phase"]
         self._attr_extra_state_attributes["operational_phase"] = OPERATIONAL_PHASE[op_phase]
-        self._attr_extra_state_attributes["fan_actual_speed"] = self._device_info["status"]["fans"][f"fan_1_speed"] 
+        self._attr_extra_state_attributes["fan_actual_speed"] = self._device_info["status"]["fans"]["fan_1_speed"] 
 
         self.async_write_ha_state()
 
@@ -140,7 +140,6 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
             LOGGER.warning("Unsupported mode: %s", hvac_mode)
             return
         power = hvac_mode_to_power[hvac_mode]
-        #token = self.refresh_token()
         token = self.coordinator.get_token()
         edilkamin.set_power(token, self._mac_address, power)
 
@@ -149,11 +148,12 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         LOGGER.debug("Setting async hvac mode: %s", fan_mode)
 
         fan_speed = fan_mode_to_speed[fan_mode]
-        #token = self.refresh_token()
         token = self.coordinator.get_token()
         payload = {"name" :"fan_1_speed", "value" : fan_speed}
         edilkamin.mqtt_command(token, self._mac_address, payload)
 
     def set_preset_mode(self, preset_mode):
         """Set new target preset mode."""
+        token = self.coordinator.get_token()
+        #edilkamin.set_power(token, self._mac_address, power)
         return
