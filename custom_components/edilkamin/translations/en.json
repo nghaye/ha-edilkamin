@@ -1,0 +1,24 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Device is already configured"
+        },
+        "error": {
+            "cannot_connect": "Failed to connect",
+            "invalid_auth": "Invalid authentication",
+            "unknown": "Unexpected error"
+        },
+        "step": {
+            "user": {
+                "title": "Add Edilkamin Stove",
+                "description" : "You will need the Wi-Fi MAC Address of the stove and the credentials of the smartphone application",
+                "data": {
+                    "name": "Name",
+                    "password": "Password",
+                    "username": "Username",
+                    "mac": "MAC Address"
+                }
+            }
+        }
+    }
+}

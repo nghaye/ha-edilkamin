@@ -18,10 +18,10 @@ from .const import DOMAIN, LOGGER
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
+        vol.Optional(CONF_NAME): cv.string,
         vol.Required(CONF_USERNAME): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
         vol.Optional(CONF_MAC): cv.string,
-        vol.Optional(CONF_NAME): cv.string,
     }
 )
 
@@ -76,7 +76,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a flow initiated by the user."""
         if user_input is None:
             return self.async_show_form(
-                step_id="user", data_schema=STEP_USER_DATA_SCHEMA
+                step_id="user", 
+                data_schema=STEP_USER_DATA_SCHEMA
             )
         errors = {}
         try:
