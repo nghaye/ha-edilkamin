@@ -16,8 +16,7 @@ Based on the work of https://github.com/AndreMiras/core
 
 ## Not working / Issues
 
-- Issue with the integration setup form, mac and name fields are blank
-- Manual mode
+- Manual mode / manual power
 - Use edilkamin.py 1.2.0
 
 ## To-do
