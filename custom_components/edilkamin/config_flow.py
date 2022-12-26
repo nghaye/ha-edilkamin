@@ -18,9 +18,9 @@ from .const import DOMAIN, LOGGER
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
-        vol.Optional(CONF_NAME): cv.string,
         vol.Required(CONF_USERNAME): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
+        vol.Optional(CONF_NAME): cv.string,
         vol.Optional(CONF_MAC): cv.string,
     }
 )
@@ -56,9 +56,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     hub = EdilkaminHub(hass)
     username = data[CONF_USERNAME]
     password = data[CONF_PASSWORD]
-    #mac_address = data[CONF_MAC]
     if not CONF_NAME in data :
-        #data[CONF_NAME] = "Stove " + data[CONF_MAC]
         data[CONF_NAME] = "Pellet Stove"
     token = await hub.authenticate(username, password)
     if not token:

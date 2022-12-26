@@ -70,6 +70,10 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
             "identifiers": {("edilkamin", self._mac_address)}
 		}
 
+        # Initial values
+        self._attr_percentage = 0
+        self._attr_preset_mode = "auto"
+
         self._attr_extra_state_attributes = {}
 
     #@callback
@@ -91,17 +95,19 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
 
         self.async_write_ha_state()
 
-    def set_percentage(self, percentage: int) -> None:
+    async def set_percentage(self, percentage: int) -> None:
         """Set the speed percentage of the fan."""
         LOGGER.debug("Setting async percentage: %s", percentage)
 
         fan_speed = FAN_PERCENTAGE_SPEED[percentage]
         token = self.coordinator.get_token()
         payload = {"name" :"fan_2_speed", "value" : fan_speed}
-        edilkamin.mqtt_command(token, self._mac_address, payload)
-        self._attr_percentage = percentage
+        #edilkamin.mqtt_command(token, self._mac_address, payload)
+        
+        await self.hass.async_add_executor_job(edilkamin.mqtt_command, token, self._mac_address, payload)
+        await self.coordinator.async_refresh()
 
-    def set_preset_mode(self, preset_mode: str) -> None:
+    async def set_preset_mode(self, preset_mode: str) -> None:
         """Set the speed percentage of the fan."""
         LOGGER.debug("Setting async fan mode: %s", preset_mode)
 
@@ -111,11 +117,11 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
         else :
             fan_speed = FAN_PERCENTAGE_SPEED[self._attr_percentage]
             payload = {"name" : self._mqtt_command, "value" : fan_speed}
-        edilkamin.mqtt_command(token, self._mac_address, payload)
 
-        self._attr_preset_mode = preset_mode
+        await self.hass.async_add_executor_job(edilkamin.mqtt_command, token, self._mac_address, payload)
+        await self.coordinator.async_refresh()
 
-    def turn_on(self, speed = None, percentage = None, preset_mode = None, **kwargs) -> None:
+    async def turn_on(self, speed = None, percentage = None, preset_mode = None, **kwargs) -> None:
         """Turn the fan on"""
         token = self.coordinator.get_token()
         if preset_mode == "auto" or self._attr_preset_mode == "auto" :
@@ -127,15 +133,17 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
                 fan_speed = FAN_PERCENTAGE_SPEED[self._attr_percentage]
             payload = {"name" : self._mqtt_command, "value" : fan_speed}
 
-        edilkamin.mqtt_command(token, self._mac_address, payload)
+        await self.hass.async_add_executor_job(edilkamin.mqtt_command, token, self._mac_address, payload)
+        await self.coordinator.async_refresh()
 
-    def turn_off(self, **kwargs) -> None:
+    async def turn_off(self, **kwargs) -> None:
         """Turn the fan off."""
         
         token = self.coordinator.get_token()
         payload = {"name" : self._mqtt_command, "value" : 0}
-        edilkamin.mqtt_command(token, self._mac_address, payload)
-        self._attr_percentage = 0
+
+        await self.hass.async_add_executor_job(edilkamin.mqtt_command, token, self._mac_address, payload)
+        await self.coordinator.async_refresh()
 
     @property
     def is_on(self) -> bool:
@@ -144,4 +152,4 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
         if power == edilkamin.Power.OFF :
             return False
         else :
-            return self._attr_percentage == 0
+            return self._attr_percentage != 0

@@ -22,7 +22,7 @@ from .const import *
 
 power_to_hvac = {
     edilkamin.Power.OFF: HVACMode.OFF,
-    edilkamin.Power.ON: HVACMode.AUTO,
+    edilkamin.Power.ON: HVACMode.HEAT,
 }
 hvac_mode_to_power = {hvac: power for (power, hvac) in power_to_hvac.items()}
 
@@ -43,7 +43,7 @@ async def async_setup_entry(
 class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
     """Representation of a stove."""
 
-    _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF, HVACMode.AUTO]
+    _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
     _attr_temperature_unit = TEMP_CELSIUS
     _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.FAN_MODE | ClimateEntityFeature.PRESET_MODE
     _attr_fan_modes = FAN_MODES
@@ -77,8 +77,11 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         fan_speed =  self._device_info["nvm"]["user_parameters"]["fan_1_ventilation"]       
         self._attr_fan_mode = FAN_SPEED_TO_MODE[fan_speed]
 
-        actual_power = self._device_info["status"]["state"]["actual_power"]
-        self._attr_preset_mode = PRESET_MODES[actual_power - 1]
+        if self._device_info["nvm"]["user_parameters"]["is_auto"] :
+             self._attr_preset_mode = PRESET_AUTO
+        else :
+            manual_power = self._device_info["nvm"]["user_parameters"]["manual_power"]
+            self._attr_preset_mode = PRESET_MODES[manual_power]
 
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}
@@ -107,7 +110,11 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
 
         actual_power = self._device_info["status"]["state"]["actual_power"]
         self._attr_extra_state_attributes["actual_power"] = actual_power
-        self._attr_preset_mode = PRESET_MODES[actual_power - 1]
+        if self._device_info["nvm"]["user_parameters"]["is_auto"] :
+             self._attr_preset_mode = PRESET_AUTO
+        else :
+            manual_power = self._device_info["nvm"]["user_parameters"]["manual_power"]
+            self._attr_preset_mode = PRESET_MODES[manual_power]
 
         #self._attr_extra_state_attributes["relax_mode"] = self._device_info["nvm"]["user_parameters"]["is_relax_active"]
         op_phase = self._device_info["status"]["state"]["operational_phase"]
@@ -146,5 +153,12 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
     def set_preset_mode(self, preset_mode) -> None:
         """Set new target preset mode."""
         token = self.coordinator.get_token()
-        #edilkamin.set_power(token, self._mac_address, power)
-        return
+        if preset_mode == PRESET_AUTO :
+            payload = {"name" : "auto_mode", "value" : True}
+            edilkamin.mqtt_command(token, self._mac_address, payload)
+        else :
+            payload = {"name" : "auto_mode", "value" : False}
+            edilkamin.mqtt_command(token, self._mac_address, payload)
+            # TODO : Find the correct mqtt command for manual power
+            #payload = {"name" : "manual_power", "value" : PRESET_MODE_TO_POWER[preset_mode]}
+            #edilkamin.mqtt_command(token, self._mac_address, payload)

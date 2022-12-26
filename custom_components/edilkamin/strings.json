@@ -5,9 +5,9 @@
         "title": "Add Edilkamin Stove",
         "description" : "You will need the Wi-Fi MAC Address of the stove and the credentials of the smartphone application",
         "data": {
-          "name": "[%key:common::config_flow::data::name%]",
           "username": "[%key:common::config_flow::data::username%]",
           "password": "[%key:common::config_flow::data::password%]",
+          "name": "[%key:common::config_flow::data::name%]",
           "mac": "[%key:common::config_flow::data::mac%]"
         }
       }

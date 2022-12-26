@@ -10,7 +10,6 @@ from .const import DOMAIN
 from .coordinator import EdilkaminCoordinator
 
 PLATFORMS: list[Platform] = [Platform.CLIMATE, Platform.FAN, Platform.SENSOR, Platform.SWITCH]
-#PLATFORMS: list[Platform] = [Platform.FAN]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up edilkamin from a config entry."""
@@ -24,8 +23,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = entry.data
     hass.data[DOMAIN]["coordinator"] = coordinator
     register_device(hass, entry, mac_address)
-    #hass.config_entries.async_setup_platforms(entry, PLATFORMS)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    # First refresh
+    await coordinator.async_refresh()
 
     return True
 
