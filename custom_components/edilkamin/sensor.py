@@ -64,11 +64,9 @@ class PowerOnsNumber(CoordinatorEntity, SensorEntity):
         
         self._mac_address = coordinator.get_mac()
 
-        if name : 
-            self._attr_name = f"{name} Power Ons"
-        else :
-            self._attr_name = f"Stove Power Ons"
+        self._attr_name = f"{name} Power Ons"
         self._attr_unique_id = f"{self._mac_address}_powerons"
+        self._attr_icon = "mdi:counter"
         
         # Initial value
         self._attr_native_value = self.coordinator.data["nvm"]["total_counters"]["power_ons"]
@@ -77,7 +75,6 @@ class PowerOnsNumber(CoordinatorEntity, SensorEntity):
             "identifiers": {("edilkamin", self._mac_address)}
 		}
 
-        #self._attr_device_class = SensorDeviceClass.TEMPERATURE
         self._attr_state_class = SensorStateClass.MEASUREMENT
 
     def _handle_coordinator_update(self) -> None:
@@ -99,10 +96,7 @@ class WorkingTime(CoordinatorEntity, SensorEntity):
         self._mac_address = coordinator.get_mac()
         self._power = power
 
-        if name : 
-            self._attr_name = f"{name} Working Time P{power}"
-        else :
-            self._attr_name = f"Stove  Working Time P{power}"
+        self._attr_name = f"{name} Working Time P{power}"
         self._attr_unique_id = f"{self._mac_address}_workingtime_p{power}"
 
         self._attr_device_class = SensorDeviceClass.DURATION
@@ -135,11 +129,9 @@ class AlarmState(CoordinatorEntity, SensorEntity):
         
         self._mac_address = coordinator.get_mac()
 
-        if name : 
-            self._attr_name = f"{name} Alarm State"
-        else :
-            self._attr_name = f"Stove Alarm State"
+        self._attr_name = f"{name} Alarm State"
         self._attr_unique_id = f"{self._mac_address}_alarmstate"
+        self._attr_icon = "mdi:alert"
         
         # Initial value
         state = self.coordinator.data["status"]["state"]["alarm_type"]
@@ -149,7 +141,6 @@ class AlarmState(CoordinatorEntity, SensorEntity):
             "identifiers": {("edilkamin", self._mac_address)}
 		}
 
-        #self._attr_device_class = SensorDeviceClass.TEMPERATURE
         self._attr_state_class = SensorStateClass.MEASUREMENT
 
     def _handle_coordinator_update(self) -> None:

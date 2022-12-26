@@ -51,11 +51,9 @@ class RelaxSwitch(CoordinatorEntity, SwitchEntity):
         
         self._mac_address = coordinator.get_mac()
 
-        if name : 
-            self._attr_name = f"{name} Relax Mode"
-        else :
-            self._attr_name = "Stove Relax Mode"
+        self._attr_name = f"{name} Relax Mode"
         self._attr_unique_id = f"{self._mac_address}_relaxmode"
+        self._attr_icon = "mdi:volume-off"
         
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}
@@ -91,11 +89,9 @@ class StandbySwitch(CoordinatorEntity, SwitchEntity):
         
         self._mac_address = coordinator.get_mac()
 
-        if name : 
-            self._attr_name = f"{name} Standby Mode"
-        else :
-            self._attr_name = "Stove Standby Mode"
+        self._attr_name = f"{name} Standby Mode"
         self._attr_unique_id = f"{self._mac_address}_standbymode"
+        self._attr_icon = "mdi:pause-circle-outline"
         
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}

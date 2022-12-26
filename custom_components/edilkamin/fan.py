@@ -55,21 +55,12 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
         fan_index: int,
         name: str,
     ) -> None:
-        """
-        Create the Edilkamin Fan entity.
-
-        Use:
-        - the username/password to login
-        - the MAC address that identifies the stove
-        """
+        """Create the Edilkamin Fan entity."""
         super().__init__(coordinator)
         
         self._mac_address = coordinator.get_mac()
 
-        if name : 
-            self._attr_name = f"{name} Fan {fan_index}"
-        else :
-            self._attr_name = f"Stove Fan {fan_index} ({self._mac_address})"
+        self._attr_name = f"{name} Fan {fan_index}"
         self._attr_unique_id = f"{self._mac_address}_fan{fan_index}"
         self._fan_index = fan_index
         self._mqtt_command = f"fan_{self._fan_index}_speed"
@@ -97,15 +88,6 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
             self._attr_preset_mode = "none"
             self._attr_percentage = FAN_SPEED_PERCENTAGE[speed]
         self._attr_extra_state_attributes["actual_speed"] = self._device_info["status"]["fans"][f"fan_{self._fan_index}_speed"]  
-
-        #power = edilkamin.device_info_get_power(self._device_info)
-        #if power == edilkamin.Power.OFF :
-        #    self._attr_is_on = False
-        #else :
-        #    if self._attr_percentage == 0 :
-        #        self._attr_is_on = False
-        #    else : 
-        #        self._attr_is_on = True
 
         self.async_write_ha_state()
 

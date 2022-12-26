@@ -54,20 +54,11 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         coordinator,
         name: str,
     ) -> None:
-        """
-        Create the Edilkamin entity.
-
-        Use:
-        - the username/password to login
-        - the MAC address that identifies the stove
-        """
+        """Create the Edilkamin Climate entity."""
         super().__init__(coordinator)
 
         self._mac_address = coordinator.get_mac()
-        if name :
-            self._attr_name = name
-        else :
-            self._attr_name = f"Stove ({self._mac_address})"
+        self._attr_name = name
         self._attr_unique_id = self._mac_address + "_stove"
         self._device_info = {}
 
@@ -133,7 +124,7 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         token = self.coordinator.get_token()
         edilkamin.set_target_temperature(token, self._mac_address, temperature)
 
-    def set_hvac_mode(self, hvac_mode):
+    def set_hvac_mode(self, hvac_mode) -> None:
         """Set new target hvac mode."""
         LOGGER.debug("Setting async hvac mode: %s", hvac_mode)
         if hvac_mode not in hvac_mode_to_power:
@@ -143,7 +134,7 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         token = self.coordinator.get_token()
         edilkamin.set_power(token, self._mac_address, power)
 
-    def set_fan_mode(self, fan_mode):
+    def set_fan_mode(self, fan_mode) -> None:
         """Set new target fan mode."""
         LOGGER.debug("Setting async hvac mode: %s", fan_mode)
 
@@ -152,7 +143,7 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         payload = {"name" :"fan_1_speed", "value" : fan_speed}
         edilkamin.mqtt_command(token, self._mac_address, payload)
 
-    def set_preset_mode(self, preset_mode):
+    def set_preset_mode(self, preset_mode) -> None:
         """Set new target preset mode."""
         token = self.coordinator.get_token()
         #edilkamin.set_power(token, self._mac_address, power)

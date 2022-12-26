@@ -58,7 +58,8 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     password = data[CONF_PASSWORD]
     #mac_address = data[CONF_MAC]
     if not CONF_NAME in data :
-        data[CONF_NAME] = "Stove " + data[CONF_MAC]
+        #data[CONF_NAME] = "Stove " + data[CONF_MAC]
+        data[CONF_NAME] = "Pellet Stove"
     token = await hub.authenticate(username, password)
     if not token:
         raise InvalidAuth
