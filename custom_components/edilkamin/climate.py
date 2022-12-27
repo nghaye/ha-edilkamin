@@ -49,6 +49,12 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
     _attr_fan_modes = FAN_MODES
     _attr_preset_modes = PRESET_MODES
 
+    #Initial values
+    _attr_hvac_mode = HVACMode.OFF
+    _attr_preset_mode = PRESET_AUTO
+    _attr_current_temperature = 20.0
+    _attr_fan_mode = FAN_AUTO
+
     def __init__(
         self,
         coordinator,
@@ -61,27 +67,6 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         self._attr_name = name
         self._attr_unique_id = self._mac_address + "_stove"
         self._device_info = {}
-
-        # Initial Values
-        self._device_info = self.coordinator.data   
-
-        power = edilkamin.device_info_get_power(self._device_info)
-        self._attr_hvac_mode = power_to_hvac[power]
-        self._attr_target_temperature = edilkamin.device_info_get_target_temperature(
-            self._device_info
-        )
-        self._attr_current_temperature = (
-            edilkamin.device_info_get_environment_temperature(self._device_info)
-        )
-
-        fan_speed =  self._device_info["nvm"]["user_parameters"]["fan_1_ventilation"]       
-        self._attr_fan_mode = FAN_SPEED_TO_MODE[fan_speed]
-
-        if self._device_info["nvm"]["user_parameters"]["is_auto"] :
-             self._attr_preset_mode = PRESET_AUTO
-        else :
-            manual_power = self._device_info["nvm"]["user_parameters"]["manual_power"]
-            self._attr_preset_mode = PRESET_MODES[manual_power]
 
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}
@@ -131,7 +116,7 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         token = self.coordinator.get_token()
         edilkamin.set_target_temperature(token, self._mac_address, temperature)
 
-    def set_hvac_mode(self, hvac_mode) -> None:
+    async def set_hvac_mode(self, hvac_mode) -> None:
         """Set new target hvac mode."""
         LOGGER.debug("Setting async hvac mode: %s", hvac_mode)
         if hvac_mode not in hvac_mode_to_power:
@@ -139,26 +124,36 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
             return
         power = hvac_mode_to_power[hvac_mode]
         token = self.coordinator.get_token()
-        edilkamin.set_power(token, self._mac_address, power)
+        #edilkamin.set_power(token, self._mac_address, power)
 
-    def set_fan_mode(self, fan_mode) -> None:
+        await self.hass.async_add_executor_job(edilkamin.set_power, token, self._mac_address, power)
+        await self.coordinator.async_refresh()
+
+    async def set_fan_mode(self, fan_mode) -> None:
         """Set new target fan mode."""
         LOGGER.debug("Setting async hvac mode: %s", fan_mode)
 
         fan_speed = fan_mode_to_speed[fan_mode]
         token = self.coordinator.get_token()
         payload = {"name" :"fan_1_speed", "value" : fan_speed}
-        edilkamin.mqtt_command(token, self._mac_address, payload)
+        #edilkamin.mqtt_command(token, self._mac_address, payload)
 
-    def set_preset_mode(self, preset_mode) -> None:
+        await self.hass.async_add_executor_job(edilkamin.mqtt_command, token, self._mac_address, payload)
+        await self.coordinator.async_refresh()
+
+    async def set_preset_mode(self, preset_mode) -> None:
         """Set new target preset mode."""
         token = self.coordinator.get_token()
         if preset_mode == PRESET_AUTO :
             payload = {"name" : "auto_mode", "value" : True}
-            edilkamin.mqtt_command(token, self._mac_address, payload)
+            #edilkamin.mqtt_command(token, self._mac_address, payload)
+            await self.hass.async_add_executor_job(edilkamin.mqtt_command, token, self._mac_address, payload)
         else :
             payload = {"name" : "auto_mode", "value" : False}
-            edilkamin.mqtt_command(token, self._mac_address, payload)
+            #edilkamin.mqtt_command(token, self._mac_address, payload)
+            await self.hass.async_add_executor_job(edilkamin.mqtt_command, token, self._mac_address, payload)
             # TODO : Find the correct mqtt command for manual power
             #payload = {"name" : "manual_power", "value" : PRESET_MODE_TO_POWER[preset_mode]}
             #edilkamin.mqtt_command(token, self._mac_address, payload)
+        
+        await self.coordinator.async_refresh()
