@@ -13,15 +13,14 @@ Based on the work of https://github.com/AndreMiras/core
 - Stove operational mode
 - Display current power level
 - Coordinator for all data upgrades
+- Switch entity for silent mode, standby mode
 
 ## Not working / Issues
 
-- Manual mode / manual power
-- Use edilkamin.py 1.2.0
+- Manual power level
 
 ## To-do
 
-- Switch entity for silent mode
-- Switch entity for standby mode
 - Switch entity for chrono mode
+- Switch entity for airkare (if feature is available)
 - DHCP discovery
