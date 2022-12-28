@@ -1,4 +1,4 @@
-"""Edilkamin integration entity."""
+"""Edilkamin integration fan entity."""
 from __future__ import annotations
 
 import edilkamin
@@ -95,7 +95,7 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
 
         self.async_write_ha_state()
 
-    async def set_percentage(self, percentage: int) -> None:
+    async def async_set_percentage(self, percentage: int) -> None:
         """Set the speed percentage of the fan."""
         LOGGER.debug("Setting async percentage: %s", percentage)
 
@@ -107,8 +107,8 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
         await self.hass.async_add_executor_job(edilkamin.mqtt_command, token, self._mac_address, payload)
         await self.coordinator.async_refresh()
 
-    async def set_preset_mode(self, preset_mode: str) -> None:
-        """Set the speed percentage of the fan."""
+    async def async_set_preset_mode(self, preset_mode: str) -> None:
+        """Set the preset mode of the fan."""
         LOGGER.debug("Setting async fan mode: %s", preset_mode)
 
         token = self.coordinator.get_token()
@@ -121,7 +121,7 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
         await self.hass.async_add_executor_job(edilkamin.mqtt_command, token, self._mac_address, payload)
         await self.coordinator.async_refresh()
 
-    async def turn_on(self, speed = None, percentage = None, preset_mode = None, **kwargs) -> None:
+    async def async_turn_on(self, speed = None, percentage = None, preset_mode = None, **kwargs) -> None:
         """Turn the fan on"""
         token = self.coordinator.get_token()
         if preset_mode == "auto" or self._attr_preset_mode == "auto" :
@@ -136,7 +136,7 @@ class EdilkaminFan(CoordinatorEntity, FanEntity):
         await self.hass.async_add_executor_job(edilkamin.mqtt_command, token, self._mac_address, payload)
         await self.coordinator.async_refresh()
 
-    async def turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs) -> None:
         """Turn the fan off."""
         
         token = self.coordinator.get_token()

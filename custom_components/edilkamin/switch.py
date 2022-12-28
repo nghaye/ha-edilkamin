@@ -65,13 +65,13 @@ class RelaxSwitch(CoordinatorEntity, SwitchEntity):
         """Return if relax mode is on."""
         return edilkamin.device_info_get_relax_mode(self.coordinator.data)
 
-    async def turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **kwargs) -> None:
         """Turn the entity on."""
         token = self.coordinator.get_token()
         await self.hass.async_add_executor_job(edilkamin.set_relax_mode, token, self._mac_address, True)
         await self.coordinator.async_refresh()
 
-    async def turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs) -> None:
         """Turn the entity off."""
         token = self.coordinator.get_token()
         await self.hass.async_add_executor_job(edilkamin.set_relax_mode, token, self._mac_address, False)
@@ -103,13 +103,13 @@ class StandbySwitch(CoordinatorEntity, SwitchEntity):
         """Return if standby mode is on."""
         return edilkamin.device_info_get_standby_mode(self.coordinator.data)
 
-    async def turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **kwargs) -> None:
         """Turn the entity on."""
         token = self.coordinator.get_token()
         await self.hass.async_add_executor_job(edilkamin.set_standby_mode, token, self._mac_address, True)
         await self.coordinator.async_refresh()
 
-    async def turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs) -> None:
         """Turn the entity off."""
         token = self.coordinator.get_token()
         await self.hass.async_add_executor_job(edilkamin.set_standby_mode, token, self._mac_address, False)
@@ -141,14 +141,14 @@ class ChronoSwitch(CoordinatorEntity, SwitchEntity):
         """Return if standby mode is on."""
         return self.coordinator.data["status"]["flags"]["is_crono_active"]
 
-    async def turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **kwargs) -> None:
         """Turn the entity on."""
         token = self.coordinator.get_token()
         payload = {"name" : "chrono_mode", "value" : True}
         await self.hass.async_add_executor_job(edilkamin.mqtt_command, token, self._mac_address, payload)
         await self.coordinator.async_refresh()
 
-    async def turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs) -> None:
         """Turn the entity off."""
         token = self.coordinator.get_token()
         payload = {"name" : "chrono_mode", "value" : False}
