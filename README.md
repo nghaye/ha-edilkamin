@@ -18,8 +18,8 @@ Based on the work of https://github.com/AndreMiras/core
 ## Not working / Issues
 
 - Manual power level
+- DHCP discovery config flow
 
 ## To-do
 
 - Switch entity for airkare (if feature is available)
-- DHCP discovery
