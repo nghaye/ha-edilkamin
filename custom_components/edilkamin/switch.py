@@ -1,4 +1,4 @@
-"""Edilkamin sensors entity."""
+"""Edilkamin switch entities."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the stove with config flow."""
+    """Set up the stove switche with config flow."""
     name = entry.data[CONF_NAME]
     coordinator = hass.data[DOMAIN]["coordinator"]
 
@@ -34,7 +34,8 @@ async def async_setup_entry(
         [
             RelaxSwitch(coordinator, name),
             StandbySwitch(coordinator, name),
-            ChronoSwitch(coordinator, name)
+            ChronoSwitch(coordinator, name),
+            AirkareSwitch(coordinator, name)
         ],
         update_before_add=False,
     )
@@ -153,4 +154,42 @@ class ChronoSwitch(CoordinatorEntity, SwitchEntity):
         token = self.coordinator.get_token()
         payload = {"name" : "chrono_mode", "value" : False}
         await self.hass.async_add_executor_job(edilkamin.mqtt_command, token, self._mac_address, payload)
+        await self.coordinator.async_refresh()
+
+class AirkareSwitch(CoordinatorEntity, SwitchEntity):
+    """Airkare Mode Entity"""
+
+    def __init__(
+        self,
+        coordinator,
+        name: str,
+    ) -> None:
+        """Create the Edilkamin airkare switch."""
+        super().__init__(coordinator)
+        
+        self._mac_address = coordinator.get_mac()
+
+        self._attr_name = f"{name} Airkare"
+        self._attr_unique_id = f"{self._mac_address}_airkare"
+        self._attr_icon = "mdi:air-filter"
+        
+        self._attr_device_info = {
+            "identifiers": {("edilkamin", self._mac_address)}
+		}
+
+    @property
+    def is_on(self) -> bool:
+        """Return if airkare mode is on."""
+        return edilkamin.device_info_get_airkare(self.coordinator.data)
+
+    async def async_turn_on(self, **kwargs) -> None:
+        """Turn the entity on."""
+        token = self.coordinator.get_token()
+        await self.hass.async_add_executor_job(edilkamin.set_airkare, token, self._mac_address, True)
+        await self.coordinator.async_refresh()
+
+    async def async_turn_off(self, **kwargs) -> None:
+        """Turn the entity off."""
+        token = self.coordinator.get_token()
+        await self.hass.async_add_executor_job(edilkamin.set_airkare, token, self._mac_address, False)
         await self.coordinator.async_refresh()

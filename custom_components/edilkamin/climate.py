@@ -168,8 +168,11 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
                 token, 
                 self._mac_address, 
                 payload)
-            # TODO : Find the correct mqtt command for manual power
-            #payload = {"name" : "manual_power", "value" : PRESET_MODE_TO_POWER[preset_mode]}
-            #edilkamin.mqtt_command(token, self._mac_address, payload)
+            await self.hass.async_add_executor_job(
+                edilkamin.set_manual_power_level,
+                token,
+                self._mac_address,
+                PRESET_MODE_TO_POWER[preset_mode]
+            )
         
         await self.coordinator.async_refresh()
