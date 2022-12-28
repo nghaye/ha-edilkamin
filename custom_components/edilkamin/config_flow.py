@@ -20,7 +20,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
-        vol.Optional(CONF_NAME): cv.string,
+        vol.Optional(CONF_NAME, default = "Pellet Stove"): cv.string,
         vol.Optional(CONF_MAC): cv.string,
     }
 )
