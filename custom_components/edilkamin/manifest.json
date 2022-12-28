@@ -1,7 +1,7 @@
 {
   "domain": "edilkamin",
   "name": "Edilkamin Stove",
-  "version": "2022.12.22",
+  "version": "2022.12.28",
   "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/edilkamin",
   "requirements": ["edilkamin==1.2.0"],
@@ -9,7 +9,7 @@
   "zeroconf": [],
   "homekit": {},
   "dependencies": ["http"],
-  "codeowners": ["@AndreMiras", "@nghaye"],
+  "codeowners": ["@nghaye"],
   "iot_class": "cloud_polling",
   "integration_type": "device",
   "dhcp": [

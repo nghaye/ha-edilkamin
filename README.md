@@ -21,6 +21,5 @@ Based on the work of https://github.com/AndreMiras/core
 
 ## To-do
 
-- Switch entity for chrono mode
 - Switch entity for airkare (if feature is available)
 - DHCP discovery
