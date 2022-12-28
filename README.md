@@ -6,20 +6,21 @@ Based on the work of https://github.com/AndreMiras/core
 
 ## Added functions 
 
-- Manual entry for mac address and name when setup the integration
-- Main fan control
-- Auxiliary fan control (with a fan entity)
-- Auto mode
-- Stove operational mode
-- Display current power level
+- Manual entry for mac address and name when setting up the integration
 - Coordinator for all data upgrades
+- Main fan control
+- Auxiliary fan control (with fan entities)
+- Auto/manual mode
+- Stove operational mode (pre-heat, extinction, heating)
+- Display current power level
 - Switch entity for silent mode, standby mode
+- Various sensors (running time, number of power ons)
+- Current alarm
 
 ## Not working / Issues
 
-- Manual power level
 - DHCP discovery config flow
 
 ## To-do
 
-- Switch entity for airkare (if feature is available)
+- Display airkare switch only if feature available
