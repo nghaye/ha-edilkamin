@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import edilkamin
-from .const import *
+from .const import DOMAIN
 
 from homeassistant.components.switch import (
     SwitchEntity,

@@ -7,7 +7,12 @@ import edilkamin
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_MAC, CONF_NAME
+from homeassistant.const import (
+    CONF_PASSWORD,
+    CONF_USERNAME,
+    CONF_MAC,
+    CONF_NAME
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
@@ -20,7 +25,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
-        vol.Optional(CONF_NAME, default = "Pellet Stove"): cv.string,
+        vol.Optional(CONF_NAME, default="Pellet Stove"): cv.string,
         vol.Optional(CONF_MAC): cv.string,
     }
 )
@@ -34,29 +39,34 @@ class EdilkaminHub:
         self.hass = hass
 
     async def authenticate(self, username: str, password: str) -> bool:
-        """Authenticate with the host and return the token or raise an exception."""
+        """Authenticate with the host and return the token or
+        raise an exception."""
         try:
             token = await self.hass.async_add_executor_job(
                 edilkamin.sign_in, username, password
             )
         except Exception as exception:
-            # we can't easily catch for the NotAuthorizedException directly since it
-            # was created dynamically with a factory
+            # we can't easily catch for the NotAuthorizedException directly
+            # since it was created dynamically with a factory
             if exception.__class__.__name__ == "NotAuthorizedException":
                 raise InvalidAuth(exception) from exception
             raise CannotConnect(exception) from exception
         return token
 
 
-async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
+async def validate_input(
+    hass: HomeAssistant,
+    data: dict[str, Any]
+) -> dict[str, Any]:
     """Validate the user input allows us to connect.
 
-    Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
+    Data has the keys from STEP_USER_DATA_SCHEMA
+    with values provided by the user.
     """
     hub = EdilkaminHub(hass)
     username = data[CONF_USERNAME]
     password = data[CONF_PASSWORD]
-    if not CONF_NAME in data :
+    if CONF_NAME not in data:
         data[CONF_NAME] = "Pellet Stove"
     token = await hub.authenticate(username, password)
     if not token:
@@ -70,12 +80,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
+        self,
+        user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle a flow initiated by the user."""
         if user_input is None:
             return self.async_show_form(
-                step_id="user", 
+                step_id="user",
                 data_schema=STEP_USER_DATA_SCHEMA
             )
         errors = {}
@@ -90,7 +101,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors["base"] = "unknown"
         else:
             data = user_input
-            return self.async_create_entry(title=user_input[CONF_USERNAME], data=data)
+            return self.async_create_entry(
+                title=user_input[CONF_USERNAME],
+                data=data
+            )
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors

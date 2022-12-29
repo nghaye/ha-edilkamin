@@ -12,13 +12,43 @@ from homeassistant.components.climate import (
     ClimateEntity,
     ClimateEntityFeature,
     HVACMode,
+    FAN_AUTO
 )
 
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
 
-from .const import *
+from .const import LOGGER, FAN_SPEED_TO_MODE, DOMAIN, FAN_MODES
+
+PRESET_AUTO = "Auto"
+PRESET_1 = "Manual P1"
+PRESET_2 = "Manual P2"
+PRESET_3 = "Manual P3"
+PRESET_4 = "Manual P4"
+PRESET_5 = "Manual P5"
+
+PRESET_MODES = [PRESET_AUTO, PRESET_1, PRESET_2, PRESET_3, PRESET_4, PRESET_5]
+PRESET_MODE_TO_POWER = {
+    "Manual P1": 1,
+    "Manual P2": 2,
+    "Manual P3": 3,
+    "Manual P4": 4,
+    "Manual P5": 5
+}
+
+PREHEAT = "Preheat"
+EXTINCTION = "Extinction"
+OFF = "Off"
+HEATING = "Heating"
+
+OPERATIONAL_PHASE = {
+    0: OFF,
+    1: PREHEAT,
+    2: HEATING,
+    3: EXTINCTION,
+    4: OFF
+}
 
 power_to_hvac = {
     ek.Power.OFF: HVACMode.OFF,
@@ -95,14 +125,14 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         )
 
         fan_speed = \
-            self._device_info["nvm"]["user_parameters"]["fan_1_ventilation"]       
+            self._device_info["nvm"]["user_parameters"]["fan_1_ventilation"]
         self._attr_fan_mode = FAN_SPEED_TO_MODE[fan_speed]
 
         actual_power = self._device_info["status"]["state"]["actual_power"]
         self._attr_extra_state_attributes["actual_power"] = actual_power
-        if self._device_info["nvm"]["user_parameters"]["is_auto"] :
+        if self._device_info["nvm"]["user_parameters"]["is_auto"]:
             self._attr_preset_mode = PRESET_AUTO
-        else :
+        else:
             manual_power = \
                 self._device_info["nvm"]["user_parameters"]["manual_power"]
             self._attr_preset_mode = PRESET_MODES[manual_power]
@@ -111,15 +141,14 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         self._attr_extra_state_attributes["operational_phase"] = \
             OPERATIONAL_PHASE[op_phase]
         self._attr_extra_state_attributes["fan_actual_speed"] = \
-            self._device_info["status"]["fans"]["fan_1_speed"] 
+            self._device_info["status"]["fans"]["fan_1_speed"]
 
         self.async_write_ha_state()
 
     async def async_set_temperature(self, **kwargs) -> None:
         """Set new target temperature."""
-        try:
-            temperature = kwargs.get(ATTR_TEMPERATURE)
-        except:
+        temperature = kwargs.get(ATTR_TEMPERATURE)
+        if not temperature:
             return
         token = self.coordinator.get_token()
         await self.hass.async_add_executor_job(
@@ -140,8 +169,8 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
 
         await self.hass.async_add_executor_job(
             ek.set_power,
-            token, 
-            self._mac_address, 
+            token,
+            self._mac_address,
             power)
         await self.coordinator.async_refresh()
 
@@ -154,23 +183,23 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         payload = {"name": "fan_1_speed", "value": fan_speed}
 
         await self.hass.async_add_executor_job(
-            ek.mqtt_command, 
-            token, 
-            self._mac_address, 
+            ek.mqtt_command,
+            token,
+            self._mac_address,
             payload)
         await self.coordinator.async_refresh()
 
     async def async_set_preset_mode(self, preset_mode) -> None:
         """Set new target preset mode."""
         token = self.coordinator.get_token()
-        if preset_mode == PRESET_AUTO :
+        if preset_mode == PRESET_AUTO:
             payload = {"name": "auto_mode", "value": True}
             await self.hass.async_add_executor_job(
                 ek.mqtt_command,
                 token,
                 self._mac_address,
                 payload)
-        else :
+        else:
             payload = {"name": "auto_mode", "value": False}
             await self.hass.async_add_executor_job(
                 ek.mqtt_command,
@@ -183,5 +212,5 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
                 self._mac_address,
                 PRESET_MODE_TO_POWER[preset_mode]
             )
-        
+
         await self.coordinator.async_refresh()

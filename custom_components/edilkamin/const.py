@@ -32,35 +32,6 @@ FAN_SPEED_TO_MODE = {
 FAN_MODES = [FAN_MODE_1, FAN_MODE_2, FAN_MODE_3,
              FAN_MODE_4, FAN_MODE_5, FAN_AUTO]
 
-PRESET_AUTO = "Auto"
-PRESET_1 = "Manual P1"
-PRESET_2 = "Manual P2"
-PRESET_3 = "Manual P3"
-PRESET_4 = "Manual P4"
-PRESET_5 = "Manual P5"
-
-PRESET_MODES = [PRESET_AUTO, PRESET_1, PRESET_2, PRESET_3, PRESET_4, PRESET_5]
-PRESET_MODE_TO_POWER = {
-    "Manual P1": 1,
-    "Manual P2": 2,
-    "Manual P3": 3,
-    "Manual P4": 4,
-    "Manual P5": 5
-}
-
-PREHEAT = "Preheat"
-EXTINCTION = "Extinction"
-OFF = "Off"
-HEATING = "Heating"
-
-OPERATIONAL_PHASE = {
-    0: OFF,
-    1: PREHEAT,
-    2: HEATING,
-    3: EXTINCTION,
-    4: OFF
-}
-
 FAN_SPEED_PERCENTAGE = {
     0: 0,
     1: 20,
