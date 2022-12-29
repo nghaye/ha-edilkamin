@@ -20,6 +20,7 @@ Based on the work of https://github.com/AndreMiras/core
 ## Not working / Issues
 
 - DHCP discovery config flow
+- Alarm sensor is not working
 
 ## To-do
 
