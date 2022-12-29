@@ -1,7 +1,7 @@
 """The edilkamin climate integration."""
 from __future__ import annotations
 
-import edilkamin
+import edilkamin as ek
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME, ATTR_TEMPERATURE, TEMP_CELSIUS
@@ -21,12 +21,14 @@ from homeassistant.helpers.update_coordinator import (
 from .const import *
 
 power_to_hvac = {
-    edilkamin.Power.OFF: HVACMode.OFF,
-    edilkamin.Power.ON: HVACMode.HEAT,
+    ek.Power.OFF: HVACMode.OFF,
+    ek.Power.ON: HVACMode.HEAT,
 }
 hvac_mode_to_power = {hvac: power for (power, hvac) in power_to_hvac.items()}
 
-fan_mode_to_speed = {mode: speed for (speed, mode) in FAN_SPEED_TO_MODE.items()}
+fan_mode_to_speed = {
+    mode: speed for (speed, mode) in FAN_SPEED_TO_MODE.items()}
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -40,16 +42,19 @@ async def async_setup_entry(
 
     async_add_entities([EdilkaminClimate(coordinator, name)], True)
 
+
 class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
     """Representation of a stove."""
 
     _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
     _attr_temperature_unit = TEMP_CELSIUS
-    _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.FAN_MODE | ClimateEntityFeature.PRESET_MODE
+    _attr_supported_features = (ClimateEntityFeature.TARGET_TEMPERATURE |
+                                ClimateEntityFeature.FAN_MODE |
+                                ClimateEntityFeature.PRESET_MODE)
     _attr_fan_modes = FAN_MODES
     _attr_preset_modes = PRESET_MODES
 
-    #Initial values
+    # Initial values
     _attr_hvac_mode = HVACMode.OFF
     _attr_preset_mode = PRESET_AUTO
     _attr_current_temperature = 20.0
@@ -70,7 +75,7 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
 
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}
-		}
+        }
 
         self._attr_extra_state_attributes = {}
 
@@ -78,45 +83,49 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         """Handle updated data from the coordinator."""
         self._device_info = self.coordinator.data
 
-        if not self._device_info :
+        if not self._device_info:
             return
 
-        power = edilkamin.device_info_get_power(self._device_info)
+        power = ek.device_info_get_power(self._device_info)
         self._attr_hvac_mode = power_to_hvac[power]
-        self._attr_target_temperature = edilkamin.device_info_get_target_temperature(
-            self._device_info
-        )
+        self._attr_target_temperature = \
+            ek.device_info_get_target_temperature(self._device_info)
         self._attr_current_temperature = (
-            edilkamin.device_info_get_environment_temperature(self._device_info)
+            ek.device_info_get_environment_temperature(self._device_info)
         )
 
-        fan_speed =  self._device_info["nvm"]["user_parameters"]["fan_1_ventilation"]       
+        fan_speed = \
+            self._device_info["nvm"]["user_parameters"]["fan_1_ventilation"]       
         self._attr_fan_mode = FAN_SPEED_TO_MODE[fan_speed]
 
         actual_power = self._device_info["status"]["state"]["actual_power"]
         self._attr_extra_state_attributes["actual_power"] = actual_power
         if self._device_info["nvm"]["user_parameters"]["is_auto"] :
-             self._attr_preset_mode = PRESET_AUTO
+            self._attr_preset_mode = PRESET_AUTO
         else :
-            manual_power = self._device_info["nvm"]["user_parameters"]["manual_power"]
+            manual_power = \
+                self._device_info["nvm"]["user_parameters"]["manual_power"]
             self._attr_preset_mode = PRESET_MODES[manual_power]
 
-        #self._attr_extra_state_attributes["relax_mode"] = self._device_info["nvm"]["user_parameters"]["is_relax_active"]
         op_phase = self._device_info["status"]["state"]["operational_phase"]
-        self._attr_extra_state_attributes["operational_phase"] = OPERATIONAL_PHASE[op_phase]
-        self._attr_extra_state_attributes["fan_actual_speed"] = self._device_info["status"]["fans"]["fan_1_speed"] 
+        self._attr_extra_state_attributes["operational_phase"] = \
+            OPERATIONAL_PHASE[op_phase]
+        self._attr_extra_state_attributes["fan_actual_speed"] = \
+            self._device_info["status"]["fans"]["fan_1_speed"] 
 
         self.async_write_ha_state()
 
     async def async_set_temperature(self, **kwargs) -> None:
         """Set new target temperature."""
-        if (temperature := kwargs.get(ATTR_TEMPERATURE)) is None:
+        try:
+            temperature = kwargs.get(ATTR_TEMPERATURE)
+        except:
             return
         token = self.coordinator.get_token()
         await self.hass.async_add_executor_job(
-            edilkamin.set_target_temperature,
-            token, 
-            self._mac_address, 
+            ek.set_target_temperature,
+            token,
+            self._mac_address,
             temperature)
         await self.coordinator.async_refresh()
 
@@ -130,7 +139,7 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         token = self.coordinator.get_token()
 
         await self.hass.async_add_executor_job(
-            edilkamin.set_power,
+            ek.set_power,
             token, 
             self._mac_address, 
             power)
@@ -142,10 +151,10 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
 
         fan_speed = fan_mode_to_speed[fan_mode]
         token = self.coordinator.get_token()
-        payload = {"name" :"fan_1_speed", "value" : fan_speed}
+        payload = {"name": "fan_1_speed", "value": fan_speed}
 
         await self.hass.async_add_executor_job(
-            edilkamin.mqtt_command, 
+            ek.mqtt_command, 
             token, 
             self._mac_address, 
             payload)
@@ -155,21 +164,21 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
         """Set new target preset mode."""
         token = self.coordinator.get_token()
         if preset_mode == PRESET_AUTO :
-            payload = {"name" : "auto_mode", "value" : True}
+            payload = {"name": "auto_mode", "value": True}
             await self.hass.async_add_executor_job(
-                edilkamin.mqtt_command, 
-                token, 
-                self._mac_address, 
+                ek.mqtt_command,
+                token,
+                self._mac_address,
                 payload)
         else :
-            payload = {"name" : "auto_mode", "value" : False}
+            payload = {"name": "auto_mode", "value": False}
             await self.hass.async_add_executor_job(
-                edilkamin.mqtt_command, 
-                token, 
-                self._mac_address, 
+                ek.mqtt_command,
+                token,
+                self._mac_address,
                 payload)
             await self.hass.async_add_executor_job(
-                edilkamin.set_manual_power_level,
+                ek.set_manual_power_level,
                 token,
                 self._mac_address,
                 PRESET_MODE_TO_POWER[preset_mode]

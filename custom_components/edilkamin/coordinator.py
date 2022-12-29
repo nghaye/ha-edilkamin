@@ -10,14 +10,17 @@ from homeassistant.helpers.update_coordinator import (
 
 from .const import LOGGER
 
+
 class EdilkaminCoordinator(DataUpdateCoordinator):
     """My custom coordinator."""
 
-    def __init__(self, 
-        hass, 
+    def __init__(
+        self,
+        hass,
         username: str,
         password: str,
-        mac_address: str,):
+        mac_address: str,
+    ) -> None:
         """Initialize my coordinator."""
         super().__init__(
             hass,
@@ -28,22 +31,28 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(seconds=120),
         )
         self._username = username
-        self._password = password 
-        self._mac_address = mac_address 
+        self._password = password
+        self._mac_address = mac_address
 
         self._token = None
         self._device_info = {}
 
     async def refresh_token(self) -> str:
         """Login to refresh the token."""
-        return await self.hass.async_add_executor_job(edilkamin.sign_in, self._username, self._password)
-        #return edilkamin.sign_in(self._username, self._password)
+        return await self.hass.async_add_executor_job(
+            edilkamin.sign_in,
+            self._username,
+            self._password
+        )
 
     async def update(self) -> None:
         """Get the latest data and update the relevant Entity attributes."""
         self._token = await self.refresh_token()
-        return await self.hass.async_add_executor_job(edilkamin.device_info, self._token, self._mac_address)
-        #return self._device_info
+        return await self.hass.async_add_executor_job(
+            edilkamin.device_info,
+            self._token,
+            self._mac_address
+        )
 
     async def _async_update_data(self):
         """Fetch data from API endpoint.
@@ -56,8 +65,8 @@ class EdilkaminCoordinator(DataUpdateCoordinator):
             # handled by the data update coordinator.
             async with async_timeout.timeout(10):
                 return await self.update()
-        except :
-            raise UpdateFailed(f"Error communicating with API")
+        except:
+            raise UpdateFailed("Error communicating with API")
 
     def get_token(self):
         return self._token

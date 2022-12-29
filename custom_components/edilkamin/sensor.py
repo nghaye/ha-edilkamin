@@ -1,8 +1,8 @@
-"""Edilkamin sensors entity."""
+"""Edilkamin sensors entities."""
 
 from __future__ import annotations
 
-from .const import *
+from .const import DOMAIN
 
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -19,6 +19,7 @@ from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+# TODO : find other alarm codes
 ALARMSTATE = {
     0: "None",
     1: "Unknown code 1",
@@ -27,7 +28,6 @@ ALARMSTATE = {
     4: "Failed Ignition"
 }
 
-_LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -51,6 +51,7 @@ async def async_setup_entry(
         update_before_add=False,
     )
 
+
 class PowerOnsNumber(CoordinatorEntity, SensorEntity):
     """Number of power ons"""
 
@@ -61,25 +62,30 @@ class PowerOnsNumber(CoordinatorEntity, SensorEntity):
     ) -> None:
         """Create the Edilkamin power ons sensor entity."""
         super().__init__(coordinator)
-        
+
         self._mac_address = coordinator.get_mac()
 
         self._attr_name = f"{name} Power Ons"
         self._attr_unique_id = f"{self._mac_address}_powerons"
         self._attr_icon = "mdi:counter"
-        
+
         # Initial value
-        self._attr_native_value = self.coordinator.data["nvm"]["total_counters"]["power_ons"]
+        self._attr_native_value = (
+            self.coordinator.data["nvm"]["total_counters"]["power_ons"]
+        )
 
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}
-		}
+        }
 
         self._attr_state_class = SensorStateClass.MEASUREMENT
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        self._attr_native_value = self.coordinator.data["nvm"]["total_counters"]["power_ons"]
+        self._attr_native_value = (
+            self.coordinator.data["nvm"]["total_counters"]["power_ons"]
+        )
+
 
 class WorkingTime(CoordinatorEntity, SensorEntity):
     """Number of power ons"""
@@ -92,9 +98,10 @@ class WorkingTime(CoordinatorEntity, SensorEntity):
     ) -> None:
         """Create the Edilkamin working time sensor entity."""
         super().__init__(coordinator)
-        
+
         self._mac_address = coordinator.get_mac()
         self._power = power
+        self._counter = f"p{self._power}_working_time"
 
         self._attr_name = f"{name} Working Time P{power}"
         self._attr_unique_id = f"{self._mac_address}_workingtime_p{power}"
@@ -104,16 +111,19 @@ class WorkingTime(CoordinatorEntity, SensorEntity):
 
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}
-		}
-        
-        # Initial value
-        self._attr_native_value = self.coordinator.data["nvm"]["total_counters"][f"p{self._power}_working_time"]
-        self._attr_native_unit_of_measurement = "h"
+        }
 
+        # Initial value
+        self._attr_native_value = (
+            self.coordinator.data["nvm"]["total_counters"][self._counter]
+        )
+        self._attr_native_unit_of_measurement = "h"
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        self._attr_native_value = self.coordinator.data["nvm"]["total_counters"][f"p{self._power}_working_time"]
+        self._attr_native_value = (
+            self.coordinator.data["nvm"]["total_counters"][self._counter]
+        )
 
 
 class AlarmState(CoordinatorEntity, SensorEntity):
@@ -126,20 +136,20 @@ class AlarmState(CoordinatorEntity, SensorEntity):
     ) -> None:
         """Create the Edilkamin alarm state sensor entity."""
         super().__init__(coordinator)
-        
+
         self._mac_address = coordinator.get_mac()
 
         self._attr_name = f"{name} Alarm State"
         self._attr_unique_id = f"{self._mac_address}_alarmstate"
         self._attr_icon = "mdi:alert"
-        
+
         # Initial value
         state = self.coordinator.data["status"]["state"]["alarm_type"]
         self._attr_native_value = ALARMSTATE[state]
 
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}
-		}
+        }
 
         self._attr_state_class = SensorStateClass.MEASUREMENT
 
