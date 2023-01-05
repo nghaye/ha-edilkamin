@@ -16,6 +16,8 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.components import dhcp
+from homeassistant.helpers import device_registry as dr
 
 import homeassistant.helpers.config_validation as cv
 
@@ -78,6 +80,30 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for edilkamin."""
 
     VERSION = 1
+
+    def __init__(self):
+        """Initialize the config flow."""
+        self._discovered_ip = None
+        self._discovered_mac = None
+    
+    async def async_step_dhcp(
+        self,
+        discovery_info: dhcp.DhcpServiceInfo
+    ) -> FlowResult:
+        """Handle discovery via dhcp."""
+        self._discovered_ip = discovery_info.ip
+        self._discovered_mac = discovery_info.macaddress
+        LOGGER.debug(
+            "Edilkamin stove discovered from dhcp : IP is %s - MAC is %s",
+            self._discovered_ip,
+            self._discovered_mac
+        )
+        return await self._async_handle_discovery()
+    
+    async def _async_handle_discovery(self) -> FlowResult:
+        """Handle any discovery."""
+        mac = dr.format_mac(self._discovered_mac)
+        return self.async_step_user({CONF_MAC: mac})
 
     async def async_step_user(
         self,
