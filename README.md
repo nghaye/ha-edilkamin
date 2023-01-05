@@ -14,27 +14,28 @@ You can use HACS to install this integration as custom repository
 If you are not using HACS, you must copy `edilkamin` into your `custom_components` folder on HA
 
 ## Configuration
-Add an instance of `Edilkamin Stove` using the UI in the integration section. You will need to provide the username and password used to register the stove in the Mind smartphone app. You also need to provide the Wifi MAC Address of the stove, which can be found in the Mind App, `Main Menu > Settings > Software > MQTT MAC`
 
-## Added functions 
+The Stove should be discovered automatically with DHCP discovery.
 
-- Manual entry for mac address and name when setup the integration
-- Main fan control
-- Auxiliary fan control (with a fan entity)
+If not, add an instance of `Edilkamin Stove` using the UI in the integration section. You will need to provide the username and password used to register the stove in the Mind smartphone app. You also need to provide the Wifi MAC Address of the stove, which can be found in the Mind App, `Main Menu > Settings > Software > MQTT MAC`
+
+## Main features
+
+- Climate entity for the stove, with manual power control and manual fan control
+- DHCP discovery or manual entry with MAC Address
+- Auxiliary fans control (with fan entities)
 - Auto mode
 - Stove operational mode
 - Display current power level
 - Coordinator for all data upgrades
-- Switch entity for silent mode, standby mode
+- Switch entities for silent mode, standby mode, airkare
+- Sensors entities for the running time and number of power ons
 
-## Not working / Issues
+## Issues / To-Do
 
-- Issues with the refresh of various sensors
-
-## To-do
-
-- DHCP discovery
-- Detect if airkare feature is available
+- Issues with the refresh of the sensors
+- More tests needed for the alarm sensor
+- Create airkare switch entity only if feature is available
 
 ## Disclaimer
 - The API calls come from the reverse envineering of the Android app, and are not guaranteed to work in the long term
@@ -43,3 +44,4 @@ Add an instance of `Edilkamin Stove` using the UI in the integration section. Yo
 
 ## Thanks to
 - @AndreMiras for reverse engineering the Android app and providing the Python librairy for most of the API calls, and also for the initial component code
+- @shisva for its contributions and testing
