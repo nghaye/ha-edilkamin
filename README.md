@@ -14,7 +14,10 @@ You can use HACS to install this integration as custom repository
 If you are not using HACS, you must copy `edilkamin` into your `custom_components` folder on HA
 
 ## Configuration
-Add an instance of `Edilkamin Stove` using the UI in the integration section. You will need to provide the username and password used to register the stove in the Mind smartphone app. You also need to provide the Wifi MAC Address of the stove, which can be found in the Mind App, `Main Menu > Settings > Software > MQTT MAC`
+
+The Stove should be discovered automatically with DHCP discovery.
+
+If not, add an instance of `Edilkamin Stove` using the UI in the integration section. You will need to provide the username and password used to register the stove in the Mind smartphone app. You also need to provide the Wifi MAC Address of the stove, which can be found in the Mind App, `Main Menu > Settings > Software > MQTT MAC`
 
 ## Main features
 
@@ -41,3 +44,4 @@ Add an instance of `Edilkamin Stove` using the UI in the integration section. Yo
 
 ## Thanks to
 - @AndreMiras for reverse engineering the Android app and providing the Python librairy for most of the API calls, and also for the initial component code
+- @shisva for its contributions and testing
