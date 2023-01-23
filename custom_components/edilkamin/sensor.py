@@ -19,13 +19,16 @@ from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from datetime import datetime
+
 # TODO : find other alarm codes
 ALARMSTATE = {
     0: "None",
     1: "Unknown code 1",
     2: "Unknown code 2",
     3: "Pellet End",
-    4: "Failed Ignition"
+    4: "Failed Ignition",
+    21: "Power Outage"
 }
 
 
@@ -47,6 +50,8 @@ async def async_setup_entry(
             WorkingTime(coordinator, name, 4),
             WorkingTime(coordinator, name, 5),
             AlarmState(coordinator, name),
+            LastAlarm(coordinator, name),
+            #LastAlarmDate(coordinator, name)
         ],
         update_before_add=False,
     )
@@ -73,6 +78,8 @@ class PowerOnsNumber(CoordinatorEntity, SensorEntity):
         self._attr_native_value = (
             self.coordinator.data["nvm"]["total_counters"]["power_ons"]
         )
+        #self.update()
+        #self._attr_native_value = 114
 
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}
@@ -85,10 +92,12 @@ class PowerOnsNumber(CoordinatorEntity, SensorEntity):
         self._attr_native_value = (
             self.coordinator.data["nvm"]["total_counters"]["power_ons"]
         )
+        self.async_write_ha_state()
+
 
 
 class WorkingTime(CoordinatorEntity, SensorEntity):
-    """Number of power ons"""
+    """Working time hours for each power level"""
 
     def __init__(
         self,
@@ -124,10 +133,11 @@ class WorkingTime(CoordinatorEntity, SensorEntity):
         self._attr_native_value = (
             self.coordinator.data["nvm"]["total_counters"][self._counter]
         )
+        self.async_write_ha_state()
 
 
 class AlarmState(CoordinatorEntity, SensorEntity):
-    """Number of power ons"""
+    """Current alarm"""
 
     def __init__(
         self,
@@ -141,11 +151,11 @@ class AlarmState(CoordinatorEntity, SensorEntity):
 
         self._attr_name = f"{name} Alarm State"
         self._attr_unique_id = f"{self._mac_address}_alarmstate"
-        self._attr_icon = "mdi:alert"
+        self._attr_icon = "mdi:bell-alert"
 
         # Initial value
-        state = self.coordinator.data["status"]["state"]["alarm_type"]
-        self._attr_native_value = ALARMSTATE[state]
+        #state = self.coordinator.data["status"]["state"]["alarm_type"]
+        #self._attr_native_value = ALARMSTATE[state]
 
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}
@@ -156,4 +166,45 @@ class AlarmState(CoordinatorEntity, SensorEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         state = self.coordinator.data["status"]["state"]["alarm_type"]
-        self._attr_native_value = ALARMSTATE[state]
+        try :
+            self._attr_native_value = ALARMSTATE[state]
+        except :
+            self._attr_native_value = state
+        self.async_write_ha_state()
+
+class LastAlarm(CoordinatorEntity, SensorEntity):
+    """Last alarm"""
+
+    def __init__(
+        self,
+        coordinator,
+        name: str,
+    ) -> None:
+        """Create the Edilkamin alarm state sensor entity."""
+        super().__init__(coordinator)
+
+        self._mac_address = coordinator.get_mac()
+
+        self._attr_name = f"{name} Last Alarm"
+        self._attr_unique_id = f"{self._mac_address}_lastalarm"
+        self._attr_icon = "mdi:alert"
+
+        self._attr_device_info = {
+            "identifiers": {("edilkamin", self._mac_address)}
+        }
+
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+
+        self._attr_extra_state_attributes = {}
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        index = self.coordinator.data["nvm"]["alarms_log"]["index"]
+        last_alarm = self.coordinator.data["nvm"]["alarms_log"]["alarms"][index - 1]
+        try :
+            self._attr_native_value = ALARMSTATE[last_alarm["type"]]
+        except :
+            self._attr_native_value = last_alarm["type"]
+        self._attr_extra_state_attributes["Alarm Code"] = last_alarm["type"]
+        self._attr_extra_state_attributes["Date"] = datetime.fromtimestamp(last_alarm["timestamp"])
+        self.async_write_ha_state()

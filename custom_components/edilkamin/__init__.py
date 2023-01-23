@@ -6,8 +6,10 @@ from homeassistant.const import Platform, CONF_PASSWORD, CONF_USERNAME, CONF_MAC
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 
-from .const import DOMAIN
+from .const import DOMAIN, LOGGER
 from .coordinator import EdilkaminCoordinator
+
+import json
 
 PLATFORMS: list[Platform] = [Platform.CLIMATE, Platform.FAN, Platform.SENSOR, Platform.SWITCH]
 
@@ -22,16 +24,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_PASSWORD],
         mac_address
     )
+
+    # First refresh
     await coordinator.async_refresh()
+    LOGGER.debug(coordinator._device_info)
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = entry.data
     hass.data[DOMAIN]["coordinator"] = coordinator
     register_device(hass, entry, mac_address)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
-    # First refresh
-    # await coordinator.async_refresh()
 
     return True
 
@@ -53,5 +55,5 @@ def register_device(hass, config_entry, mac_address):
         manufacturer="EdilKamin",
         name=config_entry.data.get(CONF_NAME),
         model="The Mind",
-        #sw_version=device_info.get("softwareVersion", DEFAULT_VERSION)
+        connections={(dr.CONNECTION_NETWORK_MAC, mac_address)}
     )

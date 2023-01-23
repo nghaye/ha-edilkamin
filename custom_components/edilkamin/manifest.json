@@ -1,9 +1,9 @@
 {
   "domain": "edilkamin",
   "name": "Edilkamin Stove",
-  "version": "2022.12.28",
+  "version": "2023.01.23",
   "config_flow": true,
-  "documentation": "https://www.home-assistant.io/integrations/edilkamin",
+  "documentation": "https://github.com/nghaye/ha-edilkamin",
   "requirements": ["edilkamin==1.2.0"],
   "ssdp": [],
   "zeroconf": [],
