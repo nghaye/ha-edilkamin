@@ -9,9 +9,9 @@ This component provides custom integration with Edilkamin pellet stoves and The 
 Based on the unofficial Python library [edilkamin.py](https://github.com/AndreMiras/edilkamin.py)
 
 ## How to install
-You can use HACS to install this integration as custom repository
+You can use HACS to install this integration as custom repository.
 
-If you are not using HACS, you must copy `edilkamin` into your `custom_components` folder on HA
+If you are not using HACS, you must copy `edilkamin` into your `custom_components` folder on HA.
 
 ## Configuration
 
@@ -21,20 +21,26 @@ If not, add an instance of `Edilkamin Stove` using the UI in the integration sec
 
 ## Main features
 
-- Climate entity for the stove, with manual power control and manual fan control
-- DHCP discovery or manual entry with MAC Address
-- Auxiliary fans control (with fan entities)
-- Auto mode
-- Stove operational mode
-- Display current power level
-- Coordinator for all data upgrades
-- Switch entities for silent mode, standby mode, airkare
-- Sensors entities for the running time and number of power ons
-- Last and current alarm
+- DHCP discovery or manual entry with Wifi MAC Address
+- Climate entity for the stove, with the following features :
+  - Manual/auto power control 
+  - Manual/auto fan control
+  - Temperature measurement from the remote
+  - (extra attribute) Operationnal mode
+  - (extra attribute) Current power level
+- Fan entities for each auxiliary fan
+- Switch entities
+  - Silent mode
+  - Standby mode
+  - Airkare
+- Sensor entities
+  - Number of power ons
+  - Running time
+  - Current alarm
+  - Last alarm 
 
 ## Issues / To-Do
 
-- Issues with the refresh of the sensors
 - More tests needed for the alarm sensor, needs to map the different error codes and messages
 - Create airkare switch entity only if feature is available
 
