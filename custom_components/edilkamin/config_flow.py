@@ -23,15 +23,20 @@ import homeassistant.helpers.config_validation as cv
 
 from .const import DOMAIN, LOGGER
 
-STEP_USER_DATA_SCHEMA = vol.Schema(
+STEP_CRED_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
+        #vol.Required(CONF_MAC): cv.string,
         vol.Optional(CONF_NAME, default="Pellet Stove"): cv.string,
-        vol.Optional(CONF_MAC): cv.string,
     }
 )
 
+STEP_USER_DATA_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_MAC): cv.string,
+    }
+)
 
 class EdilkaminHub:
     """EdilkaminHub used for testing the authentication."""
@@ -85,6 +90,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Initialize the config flow."""
         self._discovered_ip = None
         self._discovered_mac = None
+
+        self.data = {}
     
     async def async_step_dhcp(
         self,
@@ -103,17 +110,30 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def _async_handle_discovery(self) -> FlowResult:
         """Handle any discovery."""
         mac = dr.format_mac(self._discovered_mac)
-        return self.async_step_user({CONF_MAC: mac})
+        self.data[CONF_MAC] = mac
+        return await self.async_step_cred()
 
     async def async_step_user(
+        self,
+        user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        if user_input is None:
+            return self.async_show_form(
+                step_id="user",
+                data_schema=STEP_USER_DATA_SCHEMA
+            )
+        self.data = user_input
+        return await self.async_step_cred()
+
+    async def async_step_cred(
         self,
         user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle a flow initiated by the user."""
         if user_input is None:
             return self.async_show_form(
-                step_id="user",
-                data_schema=STEP_USER_DATA_SCHEMA
+                step_id="cred",
+                data_schema=STEP_CRED_DATA_SCHEMA
             )
         errors = {}
         try:
@@ -126,14 +146,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             LOGGER.exception("Unexpected exception")
             errors["base"] = "unknown"
         else:
-            data = user_input
+            self.data = self.data | user_input
             return self.async_create_entry(
                 title=user_input[CONF_USERNAME],
-                data=data
+                data=self.data
             )
 
         return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+            step_id="cred", data_schema=STEP_CRED_DATA_SCHEMA, errors=errors
         )
 
 

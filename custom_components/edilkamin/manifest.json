@@ -14,11 +14,11 @@
   "integration_type": "device",
   "dhcp": [
     {
-    "hostname": "espressif*",
+    "hostname": "espressif",
     "macaddress": "A8032A*"
     },
     {
-    "hostname": "espressif*",
+    "hostname": "espressif",
     "macaddress": "244CAB*"
     }
   ]

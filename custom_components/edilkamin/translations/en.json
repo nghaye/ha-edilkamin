@@ -10,13 +10,19 @@
         },
         "step": {
             "user": {
-                "title": "Add Edilkamin Stove",
-                "description" : "You will need the Wi-Fi MAC Address of the stove and the credentials of the smartphone application",
+                "title": "Add Edilkamin Stove (1/2)",
+                "description" : "Please insert the Wi-Fi MAC Address of the stove",
+                "data": {
+                    "mac": "MAC Address"
+                }
+            },
+            "cred": {
+                "title": "Add Edilkamin Stove (2/2)",
+                "description" : "Please provide the credentials of the smartphone application",
                 "data": {
                     "password": "Password",
                     "username": "Username",
-                    "name": "Name",
-                    "mac": "MAC Address"
+                    "name": "Name"
                 }
             }
         }
