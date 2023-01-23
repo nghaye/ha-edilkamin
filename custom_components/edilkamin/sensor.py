@@ -50,15 +50,14 @@ async def async_setup_entry(
             WorkingTime(coordinator, name, 4),
             WorkingTime(coordinator, name, 5),
             AlarmState(coordinator, name),
-            LastAlarm(coordinator, name),
-            #LastAlarmDate(coordinator, name)
+            LastAlarm(coordinator, name)
         ],
         update_before_add=False,
     )
 
 
 class PowerOnsNumber(CoordinatorEntity, SensorEntity):
-    """Number of power ons"""
+    """Number of power ons sensor entity"""
 
     def __init__(
         self,
@@ -78,8 +77,6 @@ class PowerOnsNumber(CoordinatorEntity, SensorEntity):
         self._attr_native_value = (
             self.coordinator.data["nvm"]["total_counters"]["power_ons"]
         )
-        #self.update()
-        #self._attr_native_value = 114
 
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}
@@ -94,10 +91,8 @@ class PowerOnsNumber(CoordinatorEntity, SensorEntity):
         )
         self.async_write_ha_state()
 
-
-
 class WorkingTime(CoordinatorEntity, SensorEntity):
-    """Working time hours for each power level"""
+    """Working time hours for each power level sensor entity"""
 
     def __init__(
         self,
@@ -137,7 +132,7 @@ class WorkingTime(CoordinatorEntity, SensorEntity):
 
 
 class AlarmState(CoordinatorEntity, SensorEntity):
-    """Current alarm"""
+    """Current alarm sensor entity"""
 
     def __init__(
         self,
@@ -152,10 +147,6 @@ class AlarmState(CoordinatorEntity, SensorEntity):
         self._attr_name = f"{name} Alarm State"
         self._attr_unique_id = f"{self._mac_address}_alarmstate"
         self._attr_icon = "mdi:bell-alert"
-
-        # Initial value
-        #state = self.coordinator.data["status"]["state"]["alarm_type"]
-        #self._attr_native_value = ALARMSTATE[state]
 
         self._attr_device_info = {
             "identifiers": {("edilkamin", self._mac_address)}
@@ -173,7 +164,7 @@ class AlarmState(CoordinatorEntity, SensorEntity):
         self.async_write_ha_state()
 
 class LastAlarm(CoordinatorEntity, SensorEntity):
-    """Last alarm"""
+    """Last alarm sensor entity"""
 
     def __init__(
         self,
@@ -200,11 +191,18 @@ class LastAlarm(CoordinatorEntity, SensorEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         index = self.coordinator.data["nvm"]["alarms_log"]["index"]
+        
+        # No alarm recorded
+        if self.coordinator.data["nvm"]["alarms_log"]["number"] == 0 :
+            return
+        
         last_alarm = self.coordinator.data["nvm"]["alarms_log"]["alarms"][index - 1]
-        try :
+        if last_alarm["type"] in ALARMSTATE :
             self._attr_native_value = ALARMSTATE[last_alarm["type"]]
-        except :
+        else :
+            # Error code unknown, shows only the code
             self._attr_native_value = last_alarm["type"]
+
         self._attr_extra_state_attributes["Alarm Code"] = last_alarm["type"]
         self._attr_extra_state_attributes["Date"] = datetime.fromtimestamp(last_alarm["timestamp"])
         self.async_write_ha_state()

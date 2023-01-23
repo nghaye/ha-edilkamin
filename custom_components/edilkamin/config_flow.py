@@ -27,7 +27,6 @@ STEP_CRED_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
-        #vol.Required(CONF_MAC): cv.string,
         vol.Optional(CONF_NAME, default="Pellet Stove"): cv.string,
     }
 )
@@ -88,7 +87,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     def __init__(self):
         """Initialize the config flow."""
-        self._discovered_ip = None
         self._discovered_mac = None
 
         self.data = {}
@@ -98,11 +96,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         discovery_info: dhcp.DhcpServiceInfo
     ) -> FlowResult:
         """Handle discovery via dhcp."""
-        self._discovered_ip = discovery_info.ip
         self._discovered_mac = discovery_info.macaddress
         LOGGER.debug(
-            "Edilkamin stove discovered from dhcp : IP is %s - MAC is %s",
-            self._discovered_ip,
+            "Edilkamin stove discovered from dhcp : MAC is %s",
             self._discovered_mac
         )
         return await self._async_handle_discovery()
@@ -117,6 +113,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self,
         user_input: dict[str, Any] | None = None
     ) -> FlowResult:
+        """Handle a flow initiated by the user."""
         if user_input is None:
             return self.async_show_form(
                 step_id="user",
@@ -129,7 +126,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self,
         user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Handle a flow initiated by the user."""
+        """Second step of the config flow"""
         if user_input is None:
             return self.async_show_form(
                 step_id="cred",
