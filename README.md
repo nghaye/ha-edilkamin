@@ -30,11 +30,12 @@ If not, add an instance of `Edilkamin Stove` using the UI in the integration sec
 - Coordinator for all data upgrades
 - Switch entities for silent mode, standby mode, airkare
 - Sensors entities for the running time and number of power ons
+- Last and current alarm
 
 ## Issues / To-Do
 
 - Issues with the refresh of the sensors
-- More tests needed for the alarm sensor
+- More tests needed for the alarm sensor, needs to map the different error codes and messages
 - Create airkare switch entity only if feature is available
 
 ## Disclaimer
