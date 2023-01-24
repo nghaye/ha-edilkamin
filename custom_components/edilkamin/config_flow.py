@@ -136,7 +136,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors={"base": "invalid_mac"}
             )
 
-        self.data[CONF_MAC] = dr.format_mac(user_input[CONF_MAC])
+        mac = dr.format_mac(user_input[CONF_MAC])
+        self.data[CONF_MAC] = mac
 
         return await self.async_step_cred()
 
