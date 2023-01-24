@@ -91,6 +91,7 @@ class PowerOnsNumber(CoordinatorEntity, SensorEntity):
         )
         self.async_write_ha_state()
 
+
 class WorkingTime(CoordinatorEntity, SensorEntity):
     """Working time hours for each power level sensor entity"""
 
@@ -157,11 +158,12 @@ class AlarmState(CoordinatorEntity, SensorEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         state = self.coordinator.data["status"]["state"]["alarm_type"]
-        try :
+        if state in ALARMSTATE:
             self._attr_native_value = ALARMSTATE[state]
-        except :
+        else:
             self._attr_native_value = state
         self.async_write_ha_state()
+
 
 class LastAlarm(CoordinatorEntity, SensorEntity):
     """Last alarm sensor entity"""
@@ -190,19 +192,20 @@ class LastAlarm(CoordinatorEntity, SensorEntity):
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        index = self.coordinator.data["nvm"]["alarms_log"]["index"]
-        
+        i = self.coordinator.data["nvm"]["alarms_log"]["index"]
+
         # No alarm recorded
-        if self.coordinator.data["nvm"]["alarms_log"]["number"] == 0 :
+        if self.coordinator.data["nvm"]["alarms_log"]["number"] == 0:
             return
-        
-        last_alarm = self.coordinator.data["nvm"]["alarms_log"]["alarms"][index - 1]
-        if last_alarm["type"] in ALARMSTATE :
+
+        last_alarm = self.coordinator.data["nvm"]["alarms_log"]["alarms"][i-1]
+        if last_alarm["type"] in ALARMSTATE:
             self._attr_native_value = ALARMSTATE[last_alarm["type"]]
-        else :
+        else:
             # Error code unknown, shows only the code
             self._attr_native_value = last_alarm["type"]
 
         self._attr_extra_state_attributes["Alarm Code"] = last_alarm["type"]
-        self._attr_extra_state_attributes["Date"] = datetime.fromtimestamp(last_alarm["timestamp"])
+        self._attr_extra_state_attributes["Date"] = datetime.fromtimestamp(
+            last_alarm["timestamp"])
         self.async_write_ha_state()

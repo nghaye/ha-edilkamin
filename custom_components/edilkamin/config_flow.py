@@ -22,6 +22,7 @@ from homeassistant.helpers import device_registry as dr
 import homeassistant.helpers.config_validation as cv
 
 from .const import DOMAIN, LOGGER
+from .utils import is_valid_mac_address
 
 STEP_CRED_DATA_SCHEMA = vol.Schema(
     {
@@ -36,6 +37,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_MAC): cv.string,
     }
 )
+
 
 class EdilkaminHub:
     """EdilkaminHub used for testing the authentication."""
@@ -90,7 +92,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._discovered_mac = None
 
         self.data = {}
-    
+
     async def async_step_dhcp(
         self,
         discovery_info: dhcp.DhcpServiceInfo
@@ -102,24 +104,40 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._discovered_mac
         )
         return await self._async_handle_discovery()
-    
+
     async def _async_handle_discovery(self) -> FlowResult:
         """Handle any discovery."""
         mac = dr.format_mac(self._discovered_mac)
         self.data[CONF_MAC] = mac
+
+        await self.async_set_unique_id(mac)
+        self._abort_if_unique_id_configured()
+
         return await self.async_step_cred()
 
     async def async_step_user(
         self,
         user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Handle a flow initiated by the user."""
+        """Handle a flow initiated by the user.
+        First step : enter mac address"""
         if user_input is None:
             return self.async_show_form(
                 step_id="user",
                 data_schema=STEP_USER_DATA_SCHEMA
             )
-        self.data = user_input
+
+        # Mac address validation
+        valid_mac = is_valid_mac_address(user_input[CONF_MAC])
+        if not valid_mac:
+            return self.async_show_form(
+                step_id="user",
+                data_schema=STEP_USER_DATA_SCHEMA,
+                errors={"base": "invalid_mac"}
+            )
+
+        self.data[CONF_MAC] = dr.format_mac(user_input[CONF_MAC])
+
         return await self.async_step_cred()
 
     async def async_step_cred(
@@ -127,6 +145,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Second step of the config flow"""
+
         if user_input is None:
             return self.async_show_form(
                 step_id="cred",
@@ -145,7 +164,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         else:
             self.data = self.data | user_input
             return self.async_create_entry(
-                title=user_input[CONF_USERNAME],
+                # title=user_input[CONF_USERNAME],
+                title=self.data[CONF_MAC],
                 data=self.data
             )
 
