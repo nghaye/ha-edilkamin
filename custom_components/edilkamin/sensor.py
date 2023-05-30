@@ -153,7 +153,7 @@ class AlarmState(CoordinatorEntity, SensorEntity):
             "identifiers": {("edilkamin", self._mac_address)}
         }
 
-        self._attr_state_class = SensorStateClass.MEASUREMENT
+        #self._attr_state_class = SensorStateClass.MEASUREMENT
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -186,7 +186,7 @@ class LastAlarm(CoordinatorEntity, SensorEntity):
             "identifiers": {("edilkamin", self._mac_address)}
         }
 
-        self._attr_state_class = SensorStateClass.MEASUREMENT
+        #self._attr_state_class = SensorStateClass.MEASUREMENT
 
         self._attr_extra_state_attributes = {}
 
