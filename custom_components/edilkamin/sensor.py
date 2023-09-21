@@ -44,6 +44,7 @@ async def async_setup_entry(
     async_add_entities(
         [
             PowerOnsNumber(coordinator, name),
+            WorkingTime(coordinator, name, 0),
             WorkingTime(coordinator, name, 1),
             WorkingTime(coordinator, name, 2),
             WorkingTime(coordinator, name, 3),
@@ -99,17 +100,22 @@ class WorkingTime(CoordinatorEntity, SensorEntity):
         self,
         coordinator,
         name: str,
-        power,
+        power: int,
     ) -> None:
         """Create the Edilkamin working time sensor entity."""
         super().__init__(coordinator)
 
         self._mac_address = coordinator.get_mac()
         self._power = power
-        self._counter = f"p{self._power}_working_time"
+        #self._counter = f"p{self._power}_working_time"
 
-        self._attr_name = f"{name} Working Time P{power}"
-        self._attr_unique_id = f"{self._mac_address}_workingtime_p{power}"
+        if self._power > 0:
+            self._attr_name = f"{name} Working Time P{self._power}"
+            self._attr_unique_id = f"{self._mac_address}_workingtime_p{self._power}"
+            self._attr_entity_registry_enabled_default	= False
+        else :
+            self._attr_name = f"{name} Total Working Time"
+            self._attr_unique_id = f"{self._mac_address}_workingtime"
 
         self._attr_device_class = SensorDeviceClass.DURATION
         self._attr_state_class = SensorStateClass.MEASUREMENT
@@ -118,16 +124,20 @@ class WorkingTime(CoordinatorEntity, SensorEntity):
             "identifiers": {("edilkamin", self._mac_address)}
         }
 
-        # Initial value
-        self._attr_native_value = (
-            self.coordinator.data["nvm"]["total_counters"][self._counter]
-        )
         self._attr_native_unit_of_measurement = "h"
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
+        if self._power == 0:
+            total_hours = 0
+            for power in range(1,6):
+                working_time = self.coordinator.data["nvm"]["total_counters"][f"p{power}_working_time"]
+                total_hours += working_time
+        else :
+            total_hours = self.coordinator.data["nvm"]["total_counters"][f"p{self._power}_working_time"]
+
         self._attr_native_value = (
-            self.coordinator.data["nvm"]["total_counters"][self._counter]
+            total_hours
         )
         self.async_write_ha_state()
 
@@ -153,7 +163,8 @@ class AlarmState(CoordinatorEntity, SensorEntity):
             "identifiers": {("edilkamin", self._mac_address)}
         }
 
-        #self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_device_class = SensorDeviceClass.ENUM
+        self._attr_options = list(ALARMSTATE.values())
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -186,7 +197,8 @@ class LastAlarm(CoordinatorEntity, SensorEntity):
             "identifiers": {("edilkamin", self._mac_address)}
         }
 
-        #self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_device_class = SensorDeviceClass.ENUM
+        self._attr_options = list(ALARMSTATE.values())
 
         self._attr_extra_state_attributes = {}
 
