@@ -21,13 +21,23 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from datetime import datetime
 
-# TODO : find other alarm codes
 ALARMSTATE = {
     0: "None",
-    1: "Unknown code 1",
-    2: "Unknown code 2",
-    3: "Pellet End",
+    1: "Low incomming air",
+    2: "Wrong RPM exhaust fan",
+    3: "No flame",
     4: "Failed Ignition",
+	5: "Failed airflow sensor",
+	6: "Failed thermocouple",
+	7: "Exhaust to hot",
+	8: "To hot stove",
+	9: "Failed gear motor",
+	10: "Circuit board to hot",
+	11: "Chimney pressure",
+	12: "Environment temperature sensor failed",
+	13: "Environment temperature sensor failed",
+	14: "Environment temperature sensor failed",
+	20: "Failed triac gear motor",
     21: "Power Outage"
 }
 
