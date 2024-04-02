@@ -37,7 +37,10 @@ If not, add an instance of `Edilkamin Stove` using the UI in the integration sec
   - Number of power ons
   - Running time
   - Current alarm
-  - Last alarm 
+  - Last alarm
+  - Autonomy time
+- Binary Sensor entities
+  - Pellet in Reserve status
 
 ## Issues / To-Do
 

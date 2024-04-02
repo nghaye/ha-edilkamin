@@ -4,7 +4,7 @@ from __future__ import annotations
 import edilkamin as ek
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_NAME, ATTR_TEMPERATURE, TEMP_CELSIUS
+from homeassistant.const import CONF_NAME, ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -77,10 +77,13 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
     """Representation of a stove."""
 
     _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
-    _attr_temperature_unit = TEMP_CELSIUS
+    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _enable_turn_on_off_backwards_compatibility = False
     _attr_supported_features = (ClimateEntityFeature.TARGET_TEMPERATURE |
                                 ClimateEntityFeature.FAN_MODE |
-                                ClimateEntityFeature.PRESET_MODE)
+                                ClimateEntityFeature.PRESET_MODE |
+                                ClimateEntityFeature.TURN_ON |
+                                ClimateEntityFeature.TURN_OFF)
     _attr_fan_modes = FAN_MODES
     _attr_preset_modes = PRESET_MODES
 
@@ -214,3 +217,9 @@ class EdilkaminClimate(CoordinatorEntity, ClimateEntity):
             )
 
         await self.coordinator.async_refresh()
+
+    async def async_turn_off(self) -> None:
+        await self.async_set_hvac_mode(HVACMode.OFF)
+
+    async def async_turn_on(self) -> None:
+        await self.async_set_hvac_mode(HVACMode.HEAT)
