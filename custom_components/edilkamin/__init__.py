@@ -11,7 +11,7 @@ from .coordinator import EdilkaminCoordinator
 
 import json
 
-PLATFORMS: list[Platform] = [Platform.CLIMATE, Platform.FAN, Platform.SENSOR, Platform.SWITCH]
+PLATFORMS: list[Platform] = [Platform.BINARY_SENSOR, Platform.CLIMATE, Platform.FAN, Platform.SENSOR, Platform.SWITCH]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up edilkamin from a config entry."""

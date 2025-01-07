@@ -61,7 +61,8 @@ async def async_setup_entry(
             WorkingTime(coordinator, name, 4),
             WorkingTime(coordinator, name, 5),
             AlarmState(coordinator, name),
-            LastAlarm(coordinator, name)
+            LastAlarm(coordinator, name),
+            AutonomyTime(coordinator, name)
         ],
         update_before_add=False,
     )
@@ -230,4 +231,40 @@ class LastAlarm(CoordinatorEntity, SensorEntity):
         self._attr_extra_state_attributes["Alarm Code"] = last_alarm["type"]
         self._attr_extra_state_attributes["Date"] = datetime.fromtimestamp(
             last_alarm["timestamp"])
+        self.async_write_ha_state()
+
+
+class AutonomyTime(CoordinatorEntity, SensorEntity):
+    """Autonomy Time left sensor entity"""
+
+    def __init__(
+        self,
+        coordinator,
+        name: str,
+    ) -> None:
+        """Create the Edilkamin autonomy time sensor entity."""
+        super().__init__(coordinator)
+
+        self._mac_address = coordinator.get_mac()
+
+        self._attr_name = f"{name} Autonomy Time"
+        self._attr_unique_id = f"{self._mac_address}_autonomytime"
+        self._attr_icon = "mdi:timelapse"
+
+        # Initial value
+        self._attr_native_value = (
+            self.coordinator.data["status"]["pellet"]["autonomy_time"]
+        )
+
+        self._attr_device_info = {
+            "identifiers": {("edilkamin", self._mac_address)}
+        }
+
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self._attr_native_value = (
+            self.coordinator.data["status"]["pellet"]["autonomy_time"]
+        )
         self.async_write_ha_state()
